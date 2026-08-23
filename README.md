@@ -1,51 +1,48 @@
+# ABRO — Production Portfolio & AI Engineering Platform
 
-# ABRO — Personal Portfolio & AI Engineering Showcase
+![Build Status](https://img.shields.io/badge/Production-Deployed-brightgreen)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![License](https://img.shields.io/badge/License-MIT-blue)
 
-A modern, high-performance developer portfolio built with **Next.js (App Router)**, **React Three Fiber**, **Three.js**, and **Tailwind CSS**. It features custom WebGL/GLSL shader animations, interactive 3D elements, and a clean architecture ready for AI-driven workflows.
-
----
-
-## 🛠️ Tech Stack
-
-- **Framework**: Next.js 16 (App Router, TypeScript)
-- **3D & Graphics**: Three.js, React Three Fiber (`@react-three/fiber`), `@react-three/drei`
-- **Styling**: Tailwind CSS, Framer Motion
-- **Deployment**: Vercel
+**Live Production URL**: [https://portfolio-v3-abro.vercel.app](https://portfolio-v3-abro.vercel.app)
 
 ---
 
-## 🚀 Key Features
-
-- **Signature Shader Hero (FE-AA3)**: Interactive GLSL fragment shader background driven by dynamic uniforms (`u_time`, `u_mouse`, `u_resolution`).
-- **Accessibility & Motion Safety**: Native support for system preferences via `prefers-reduced-motion` (graceful fallback to a static CSS gradient).
-- **Performance Optimization**: WebGL render capping (`dpr={[1, 1.5]}`) to ensure high FPS across Retina and high-res screens.
+## 📌 Project Overview
+This project is a high-performance personal engineering portfolio built with Next.js 16 (App Router), Three.js, React Three Fiber, and Tailwind CSS. It highlights interactive WebGL/GLSL shader workflows, modular architectural patterns, and AI integration routes designed with strict production hygiene.
 
 ---
 
-## 💻 Local Development
-
-1. Install project dependencies:
-    ```bash
-   npm install
-
-    ```
-
-2. Start the local development server:
-    ```bash
-    npm run dev
-
-    ```
-
-
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## 🛠️ Architecture & Tech Stack
+- **Framework**: Next.js 16 (App Router, Server Components)
+- **3D / Shader Engine**: Three.js, `@react-three/fiber`
+- **Styling & Motion**: Tailwind CSS, Framer Motion
+- **Deployment**: Vercel Platform
 
 ---
 
-## 📝 Assignment Report
+## 🔑 Environment Variables
 
-The documentation and technical breakdown for assignment **FE-AA3 (Signature Hero Shader)** can be found in [`SHADER_HERO.md`](https://www.google.com/search?q=./SHADER_HERO.md).
+To run this project locally or deploy it to production, configure the following environment variables in a `.env.local` file:
+
+| Variable | Description | Required | Example |
+| :--- | :--- | :--- | :--- |
+| `NEXT_PUBLIC_SITE_URL` | Base canonical URL of the deployment | Yes | `https://portfolio-v3-abro.vercel.app` |
+| `OPENAI_API_KEY` | Key for server-side AI completion routes | Optional | `sk-proj-...` |
 
 ---
 
-© 2026 BAWA Abdoul-Madjid (ABRO).
+## 🛡️ Production Hygiene & Abuse Protection
+- **Rate Limiting**: API routes feature an in-memory IP-based rate limiter capping incoming requests to **10 calls/minute** to protect API credit drain.
+- **Input Caps**: Prompts sent to AI endpoints are strictly capped at **500 characters** to prevent token abuse.
+- **Serverless Duration Control**: Streaming and generation handlers are configured with `export const maxDuration = 30` to prevent infinite-hanging function execution.
+- **Cross-Browser Testing**: Verified layout rendering and WebGL shader stability on Chrome, Firefox, Edge, and Mobile Safari.
 
+---
+
+## 💻 Local Development Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone [https://github.com/ABRO-code/portfolio-v3.git](https://github.com/ABRO-code/portfolio-v3.git)
+   cd portfolio-v3
