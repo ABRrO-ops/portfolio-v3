@@ -133,12 +133,11 @@ export default function SignatureHero() {
         </p>
 
         <div className="mt-8 flex gap-4">
-          <a
-            href="#projects"
-            className="rounded-xl bg-[#00F2FE] px-6 py-3 text-sm sm:text-base font-bold text-slate-950 transition-all hover:bg-cyan-300 hover:shadow-[0_0_20px_rgba(0,242,254,0.4)]"
-          >
-            Voir les Projets
-          </a>
+          <a href="#projects">
+            <button className="px-6 py-3 rounded-xl bg-[#00F2FE] text-slate-950 font-bold hover:bg-cyan-300 transition-all cursor-pointer shadow-[0_0_20px_rgba(0,242,254,0.3)]">
+                 Voir les Projets
+            </button>
+        </a>
         </div>
       </div>
     </div>
