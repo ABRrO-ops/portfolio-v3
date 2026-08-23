@@ -43,6 +43,51 @@ To run this project locally or deploy it to production, configure the following 
 ## 💻 Local Development Setup
 
 1. **Clone the repository**:
-   ```bash
-   git clone [https://github.com/ABRO-code/portfolio-v3.git](https://github.com/ABRO-code/portfolio-v3.git)
-   cd portfolio-v3
+```bash
+git clone [https://github.com/ABRO-code/portfolio-v3.git](https://github.com/ABRO-code/portfolio-v3.git)
+cd portfolio-v3
+
+```
+
+2. **Install dependencies**:
+```bash
+npm install
+
+```
+
+
+3. **Configure Environment Variables**:
+```bash
+cp .env.example .env.local
+
+```
+
+
+4. **Launch Development Server**:
+```bash
+npm run dev
+
+```
+
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+---
+
+## 🤖 Honest "How AI Tools Built This" Disclosure
+
+AI tools (specifically Claude 3.5 Sonnet and Gemini) were utilized throughout the development lifecycle:
+
+* **WebGL & GLSL Shaders**: Generated base vertex and fragment shader noise code, which was manually adapted for resolution scaling (`u_resolution`) and cursor interaction (`u_mouse`).
+* **Debugging & Syntax Adaptations**: Assisted in converting legacy Three.js canvas configurations to React Three Fiber standards inside Next.js Client Components.
+* **Documentation & Tests**: Generated boilerplate Markdown structures and API rate-limiting guardrail schemas.
+
+*Human Developer Role*: Code integration, layout design, responsive adjustments, state management, performance profiling (`prefers-reduced-motion` integration), and deployment verification.
+
+---
+
+## 📝 License & Author
+
+Created by **BAWA Abdoul-Madjid (ABRO)** — Frontend & AI Engineering Cohort.
+
+
