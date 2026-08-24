@@ -1,0 +1,110 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "about": "À Propos",
+    "projects": "Projets",
+    "contact": "Contact"
+  },
+  "about": {
+    "summary": {
+      "title": "RÉSUMÉ",
+      "focus": "Focus Core",
+      "trading": "Trading",
+      "architecture": "Architecture",
+      "database": "Base DB"
+    },
+    "timeline": {
+      "tcc": {
+        "title": "Finaliste Hackathon TCC Hack & Defend",
+        "subtitle": "Lomé, Togo • Équipe Commit & Pray",
+        "description": "Sélection en finale pour le projet Civic Alert, une plateforme citoyenne de signalement d'incidents."
+      },
+      "flyrank": {
+        "title": "FlyRank AI Engineering Cohort",
+        "subtitle": "Ingénierie IA Front-end",
+        "description": "Cohorte intensive sur l'intégration des LLM, FastMCP (Model Context Protocol) et interfaces dynamiques pilotées par l'IA."
+      },
+      "omni": {
+        "title": "Système Algorithmique Omni-Trader Bot",
+        "subtitle": "Trading Systémique & Quantitatif",
+        "description": "Bot de trading automatisé basé sur les concepts Smart Money (BOS, CHoCH, Order Blocks) pour XAUUSD & EURUSD."
+      },
+      "degree": {
+        "title": "Licence 1 Informatique & Ingénierie Web",
+        "subtitle": "IPNet Institute of Technology",
+        "description": "Formation spécialisée en génie logiciel, algorithmique, structures de données avec Python/JS et réseaux (CCNA)."
+      }
+    }
+  },
+  "projects": {
+    "title_1": "Projets &",
+    "title_highlight": "Réalisations",
+    "subtitle": "Applications fullstack, systèmes algorithmiques et prototypes UI/UX conçus avec un souci constant d'architecture et de performance.",
+    "categories": {
+      "all": "Tous",
+      "fullstack": "Fullstack",
+      "systems": "Systems",
+      "uiux": "UI/UX & Mobile",
+      "creative": "3D & Creative"
+    },
+    "status": {
+      "in_dev": "En développement",
+      "prod": "En production",
+      "finalist": "Finaliste Hackathon"
+    },
+    "cards": {
+      "cineai": {
+        "title": "CineAI Platform",
+        "description": "Application web propulsée par l'IA pour la génération et l'exploration de contenus cinématographiques interactifs.",
+        "highlight": "Intégration temps réel Vercel AI SDK"
+      },
+      "bankvi": {
+        "title": "Bankvi Dashboard",
+        "description": "Plateforme SaaS de gestion financière, suivi des stocks et des dettes pour marchands.",
+        "highlight": "Base de données PostgreSQL managée"
+      },
+      "omni": {
+        "title": "Omni-Trader Bot",
+        "description": "Système de trading algorithmique basé sur les concepts Smart Money, Shifts de structures et Order Blocks.",
+        "highlight": "Exécution d'ordres automatisée sur XAUUSD & EURUSD"
+      },
+      "civic": {
+        "title": "Civic Alert UI/UX",
+        "description": "Interface d'application citoyenne dédiée au signalement d'incidents urbains et à la réponse communautaire.",
+        "highlight": "Projet Finaliste TCC Hack & Defend 2026"
+      },
+      "cotipay": {
+        "title": "CotiPay Fintech",
+        "description": "Solution Fintech de tontine digitale et de gestion des paiements communautaires.",
+        "highlight": "Architecture de paiement multi-devises"
+      }
+    }
+  },
+  "contact": {
+    "tab_std": "INTERFACE STD",
+    "tab_cli": "INTERFACE CLI",
+    "title_1": "Entrons en",
+    "title_highlight": "Contact",
+    "subtitle": "// Envoyez un message directement via l'interface graphique moderne.",
+    "cards": {
+      "email": "EMAIL DIRECT",
+      "direct": "Direct",
+      "location": "LOCALISATION",
+      "location_val": "Lomé, Togo",
+      "timezone": "Fuseau GMT",
+      "codebase": "CODE BASE",
+      "open_source": "Open Source"
+    },
+    "form": {
+      "title": "Envoyer un Message",
+      "subtitle": "Remplissez ce formulaire. Les réponses sont traitées généralement sous 24h.",
+      "label_name": "Votre Nom",
+      "placeholder_name": "Abdoul BAWA",
+      "label_email": "Votre Email",
+      "placeholder_email": "nom@domaine.com",
+      "label_message": "Message",
+      "placeholder_message": "Discutons de votre projet ou d'une opportunité...",
+      "btn_send": "Transmettre le Message"
+    }
+  }
+}

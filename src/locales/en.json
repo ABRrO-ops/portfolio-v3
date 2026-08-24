@@ -1,0 +1,110 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "projects": "Projects",
+    "contact": "Contact"
+  },
+  "about": {
+    "summary": {
+      "title": "SUMMARY",
+      "focus": "Core Focus",
+      "trading": "Trading",
+      "architecture": "Architecture",
+      "database": "DB Engine"
+    },
+    "timeline": {
+      "tcc": {
+        "title": "TCC Hack & Defend Hackathon Finalist",
+        "subtitle": "Lomé, Togo • Team Commit & Pray",
+        "description": "Finalist selection for Civic Alert project, a citizen incident response platform."
+      },
+      "flyrank": {
+        "title": "FlyRank AI Engineering Cohort",
+        "subtitle": "Front-end AI Engineering",
+        "description": "Intensive cohort on LLM integration, FastMCP (Model Context Protocol) and AI-driven dynamic interfaces."
+      },
+      "omni": {
+        "title": "Omni-Trader Bot Algorithmic System",
+        "subtitle": "Systemic & Quantitative Trading",
+        "description": "Automated trading bot built around Smart Money Concepts (BOS, CHoCH, Order Blocks) for XAUUSD & EURUSD."
+      },
+      "degree": {
+        "title": "Bachelor First Year Computer Science & Web Engineering",
+        "subtitle": "IPNet Institute of Technology",
+        "description": "Specialized degree in software engineering, algorithms, data structures with Python/JS and networking (CCNA)."
+      }
+    }
+  },
+  "projects": {
+    "title_1": "Projects &",
+    "title_highlight": "Achievements",
+    "subtitle": "Fullstack applications, algorithmic systems and UI/UX prototypes crafted with focus on architecture and performance.",
+    "categories": {
+      "all": "All",
+      "fullstack": "Fullstack",
+      "systems": "Systems",
+      "uiux": "UI/UX & Mobile",
+      "creative": "3D & Creative"
+    },
+    "status": {
+      "in_dev": "In Development",
+      "prod": "In Production",
+      "finalist": "Hackathon Finalist"
+    },
+    "cards": {
+      "cineai": {
+        "title": "CineAI Platform",
+        "description": "AI-powered web application for generating and exploring interactive cinematic content.",
+        "highlight": "Real-time Vercel AI SDK integration"
+      },
+      "bankvi": {
+        "title": "Bankvi Dashboard",
+        "description": "SaaS platform for financial management, inventory tracking, and merchant debt monitoring.",
+        "highlight": "Managed PostgreSQL Database"
+      },
+      "omni": {
+        "title": "Omni-Trader Bot",
+        "description": "Algorithmic trading system based on Smart Money Concepts, Market Structure Shifts, and Order Blocks.",
+        "highlight": "Automated order execution for XAUUSD & EURUSD"
+      },
+      "civic": {
+        "title": "Civic Alert UI/UX",
+        "description": "Citizen application interface dedicated to urban incident reporting and community response.",
+        "highlight": "TCC Hack & Defend 2026 Finalist Project"
+      },
+      "cotipay": {
+        "title": "CotiPay Fintech",
+        "description": "Fintech solution for digital tontine and community payment management.",
+        "highlight": "Multi-currency payment architecture"
+      }
+    }
+  },
+  "contact": {
+    "tab_std": "STD INTERFACE",
+    "tab_cli": "CLI INTERFACE",
+    "title_1": "Get in",
+    "title_highlight": "Touch",
+    "subtitle": "// Send a direct message through the modern graphical interface.",
+    "cards": {
+      "email": "DIRECT EMAIL",
+      "direct": "Direct",
+      "location": "LOCATION",
+      "location_val": "Lomé, Togo",
+      "timezone": "GMT Timezone",
+      "codebase": "CODE BASE",
+      "open_source": "Open Source"
+    },
+    "form": {
+      "title": "Send a Message",
+      "subtitle": "Fill out this form. Inquiries are usually processed within 24 hours.",
+      "label_name": "Your Name",
+      "placeholder_name": "Abdoul BAWA",
+      "label_email": "Your Email",
+      "placeholder_email": "name@domain.com",
+      "label_message": "Message",
+      "placeholder_message": "Let's discuss your project or an opportunity...",
+      "btn_send": "Send Message"
+    }
+  }
+}

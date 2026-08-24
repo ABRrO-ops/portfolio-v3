@@ -3,59 +3,68 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import ProjectCard, { Project } from '@/Components/ProjectCard';
-
-const PROJECTS_DATA: Project[] = [
-  {
-    id: 'cineai',
-    title: 'CineAI Platform',
-    category: 'Fullstack',
-    description: 'Application web propulsée par l\'IA pour la génération et l\'exploration de contenus cinématographiques interactifs.',
-    tags: ['Next.js', 'Vite', 'Vercel AI SDK', 'TypeScript', 'Tailwind'],
-    status: 'In Development',
-    metrics: 'Intégration temps réel Vercel AI SDK',
-  },
-  {
-    id: 'bankvi',
-    title: 'Bankvi Dashboard',
-    category: 'Fullstack',
-    description: 'Plateforme SaaS de gestion financière, suivi des stocks et des dettes pour marchands.',
-    tags: ['Next.js', 'Python', 'PostgreSQL', 'Railway', 'Render'],
-    status: 'Production',
-    metrics: 'Base de données PostgreSQL managée',
-  },
-  {
-    id: 'omni-trader',
-    title: 'Omni-Trader Bot',
-    category: 'Systems',
-    description: 'Système de trading algorithmique basé sur les concepts Smart Money, Shifts de structures et Order Blocks.',
-    tags: ['Python', 'Algorithmes', 'Technical Analysis', 'TradingView API'],
-    status: 'In Development',
-    metrics: 'Exécution d\'ordres automatisée sur XAUUSD & EURUSD',
-  },
-  {
-    id: 'civic-alert',
-    title: 'Civic Alert UI/UX',
-    category: 'UI/UX & Mobile',
-    description: 'Interface d\'application citoyenne dédiée au signalement d\'incidents urbains et à la réponse communautaire.',
-    tags: ['Figma', 'UI/UX Design', 'Design System', 'Prototypage'],
-    status: 'Finalist Hackathon',
-    metrics: 'Projet Finaliste TCC Hack & Defend 2026',
-  },
-  {
-    id: 'cotipay',
-    title: 'CotiPay Fintech',
-    category: 'UI/UX & Mobile',
-    description: 'Solution Fintech de tontine digitale et de gestion des paiements communautaires.',
-    tags: ['React Native', 'UI/UX', 'Figma', 'Node.js'],
-    status: 'In Development',
-    metrics: 'Architecture de paiement multi-devises',
-  },
-];
-
-const CATEGORIES = ['Tous', 'Fullstack', 'Systems', 'UI/UX & Mobile', '3D & Creative'];
+import { useLanguage } from '@/context/LanguageContext';
 
 export default function ProjectsPage() {
+  const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState('Tous');
+
+  // Données localisées dynamiquement via i18n
+  const PROJECTS_DATA: Project[] = [
+    {
+      id: 'cineai',
+      title: t('projects.cards.cineai.title'),
+      category: 'Fullstack',
+      description: t('projects.cards.cineai.description'),
+      tags: ['Next.js', 'Vite', 'Vercel AI SDK', 'TypeScript', 'Tailwind'],
+      status: t('projects.status.in_dev') as Project['status'],
+      metrics: t('projects.cards.cineai.highlight'),
+    },
+    {
+      id: 'bankvi',
+      title: t('projects.cards.bankvi.title'),
+      category: 'Fullstack',
+      description: t('projects.cards.bankvi.description'),
+      tags: ['Next.js', 'Python', 'PostgreSQL', 'Railway', 'Render'],
+      status: t('projects.status.prod') as Project['status'],
+      metrics: t('projects.cards.bankvi.highlight'),
+    },
+    {
+      id: 'omni-trader',
+      title: t('projects.cards.omni.title'),
+      category: 'Systems',
+      description: t('projects.cards.omni.description'),
+      tags: ['Python', 'Algorithmes', 'Technical Analysis', 'TradingView API'],
+      status: t('projects.status.in_dev') as Project['status'],
+      metrics: t('projects.cards.omni.highlight'),
+    },
+    {
+      id: 'civic-alert',
+      title: t('projects.cards.civic.title'),
+      category: 'UI/UX & Mobile',
+      description: t('projects.cards.civic.description'),
+      tags: ['Figma', 'UI/UX Design', 'Design System', 'Prototypage'],
+      status: t('projects.status.finalist') as Project['status'],
+      metrics: t('projects.cards.civic.highlight'),
+    },
+    {
+      id: 'cotipay',
+      title: t('projects.cards.cotipay.title'),
+      category: 'UI/UX & Mobile',
+      description: t('projects.cards.cotipay.description'),
+      tags: ['React Native', 'UI/UX', 'Figma', 'Node.js'],
+      status: t('projects.status.in_dev') as Project['status'],
+      metrics: t('projects.cards.cotipay.highlight'),
+    },
+  ];
+
+  const CATEGORIES = [
+    { key: 'Tous', label: t('projects.categories.all') },
+    { key: 'Fullstack', label: t('projects.categories.fullstack') },
+    { key: 'Systems', label: t('projects.categories.systems') },
+    { key: 'UI/UX & Mobile', label: t('projects.categories.uiux') },
+    { key: '3D & Creative', label: t('projects.categories.creative') },
+  ];
 
   const filteredProjects = activeCategory === 'Tous'
     ? PROJECTS_DATA
@@ -72,10 +81,11 @@ export default function ProjectsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="font-poppins text-4xl font-black tracking-tight sm:text-6xl text-white mb-4"
           >
-            Projets & <span className="text-amber-gold">Réalisations</span>
+            {t('projects.title_1')}{' '}
+            <span className="text-amber-gold">{t('projects.title_highlight')}</span>
           </motion.h1>
           <p className="text-slate-300 max-w-2xl text-base leading-relaxed">
-            Applications fullstack, systèmes algorithmiques et prototypes UI/UX conçus avec un souci constant d'architecture et de performance.
+            {t('projects.subtitle')}
           </p>
         </div>
 
@@ -83,20 +93,20 @@ export default function ProjectsPage() {
         <div className="flex flex-wrap gap-2 mb-12">
           {CATEGORIES.map((cat) => (
             <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
+              key={cat.key}
+              onClick={() => setActiveCategory(cat.key)}
               className={`text-xs font-mono px-4 py-2 rounded-xl border transition-all ${
-                activeCategory === cat
+                activeCategory === cat.key
                   ? 'bg-amber-gold text-primary-dark border-amber-gold font-bold shadow-[0_0_15px_rgba(255,180,0,0.3)]'
                   : 'bg-[#0f171c]/60 text-ice-blue border-ice-blue/20 hover:border-amber-gold/40'
               }`}
             >
-              {cat}
+              {cat.label}
             </button>
           ))}
         </div>
 
-        {/* Grille de Cartes Projets avec Tilt 3D */}
+        {/* Grille de Cartes Projets */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 perspective-1000">
           {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />

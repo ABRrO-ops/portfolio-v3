@@ -3,6 +3,8 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
+import Link from 'next/link';
+import { useLanguage } from '@/context/LanguageContext';
 
 const fragmentShader = `
   uniform float u_time;
@@ -90,6 +92,7 @@ function ShaderPlane() {
 export default function SignatureHero() {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const { lang } = useLanguage();
 
   useEffect(() => {
     setIsMounted(true);
@@ -121,7 +124,7 @@ export default function SignatureHero() {
       {/* Hero Content Superposé au centre */}
       <div className="relative z-10 flex h-full w-full flex-col items-center justify-center px-4 text-center">
         <span className="mb-4 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-1 text-xs font-semibold tracking-widest text-cyan-400 uppercase backdrop-blur-md">
-          Frontend & AI Engineering
+          {lang === 'FR' ? 'Ingénierie Web & IA' : 'Frontend & AI Engineering'}
         </span>
         
         <h1 className="max-w-4xl text-4xl font-black tracking-tight text-white sm:text-6xl md:text-7xl">
@@ -129,15 +132,22 @@ export default function SignatureHero() {
         </h1>
         
         <p className="mt-4 max-w-xl text-base text-slate-300 sm:text-lg">
-          Crafting high-performance web systems, AI workflows, and algorithmic solutions.
+          {lang === 'FR'
+            ? 'Conception de systèmes web haute performance, workflows IA et solutions algorithmiques.'
+            : 'Crafting high-performance web systems, AI workflows, and algorithmic solutions.'}
         </p>
 
-        <div className="mt-8 flex gap-4">
-          <a href="#projects">
-            <button className="px-6 py-3 rounded-xl bg-[#00F2FE] text-slate-950 font-bold hover:bg-cyan-300 transition-all cursor-pointer shadow-[0_0_20px_rgba(0,242,254,0.3)]">
-                 Voir les Projets
+        <div className="mt-8 flex flex-wrap gap-4 justify-center">
+          <Link href="/projects">
+            <button className="px-6 py-3 rounded-xl bg-[#00F2FE] text-slate-950 font-bold hover:bg-cyan-300 transition-all cursor-pointer shadow-[0_0_20px_rgba(0,242,254,0.3)] text-sm">
+              {lang === 'FR' ? 'Voir les Projets' : 'View Projects'}
             </button>
-        </a>
+          </Link>
+          <Link href="/contact">
+            <button className="px-6 py-3 rounded-xl border border-cyan-500/30 bg-slate-900/60 text-white font-semibold hover:border-[#00F2FE] transition-all cursor-pointer text-sm backdrop-blur-md">
+              {lang === 'FR' ? 'Me Contacter' : 'Contact Me'}
+            </button>
+          </Link>
         </div>
       </div>
     </div>
