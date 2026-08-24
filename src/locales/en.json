@@ -5,6 +5,25 @@
     "projects": "Projects",
     "contact": "Contact"
   },
+  "hero": {
+    "badge": "Fullstack Software Engineer & Creative Technologist",
+    "title_1": "Designing",
+    "title_highlight": "complex systems",
+    "title_2": "with a creative",
+    "description": "Software engineer specializing in high-performance web/mobile applications, algorithmic trading, and immersive 3D interfaces.",
+    "btn_projects": "Explore My Projects",
+    "btn_contact": "Get in Touch"
+  },
+  "skills": {
+    "title": "Expertise & Technologies",
+    "subtitle": "Tools and frameworks I use to build robust solutions",
+    "card1_title": "Fullstack & Architecture",
+    "card1_desc": "Building scalable web applications using React, Next.js, Node.js, and PostgreSQL databases.",
+    "card2_title": "3D & Creative Coding",
+    "card2_desc": "Crafting interactive web experiences and animations with Three.js, R3F, and GLSL.",
+    "card3_title": "Python & Data / Bots",
+    "card3_desc": "Developing trading algorithms, data processing pipelines, and automation tools."
+  },
   "about": {
     "summary": {
       "title": "SUMMARY",
