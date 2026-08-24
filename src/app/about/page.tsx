@@ -1,104 +1,167 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
+import { Code2, Terminal, Award, BookOpen, Rocket, ShieldCheck, Cpu } from 'lucide-react';
 
-const skillsCategory = [
+interface TimelineItem {
+  year: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  type: 'education' | 'project' | 'achievement' | 'internship';
+  tags: string[];
+}
+
+const TIMELINE_DATA: TimelineItem[] = [
   {
-    title: 'Development & Architectures',
-    skills: ['Next.js 16 (App Router)', 'React 19', 'TypeScript', 'Tailwind CSS', 'Python', 'REST APIs'],
+    year: '2026',
+    title: 'Finaliste Hackathon TCC Hack & Defend',
+    subtitle: 'Lomé, Togo • Équipe Commit & Pray',
+    description: 'Sélection et parcours finaliste autour du projet Civic Alert, une interface citoyenne de réponse aux incidents.',
+    type: 'achievement',
+    tags: ['Hackathon', 'Civic Tech', 'UI/UX', 'Figma'],
   },
   {
-    title: '3D & AI Integration',
-    skills: ['Three.js', 'React Three Fiber', 'GLSL Shaders', 'Model Context Protocol', 'Vercel AI SDK'],
+    year: '2026',
+    title: 'FlyRank AI Engineering Cohort',
+    subtitle: 'Front-end AI Engineering',
+    description: 'Immersion intensive sur l\'intégration des LLM, FastMCP (Model Context Protocol) et la création d\'interfaces dynamiques guidées par l\'IA.',
+    type: 'internship',
+    tags: ['AI SDK', 'FastMCP', 'Next.js', 'LLM'],
   },
   {
-    title: 'Cloud & Infrastructure',
-    skills: ['PostgreSQL', 'Railway', 'Render', 'Vercel', 'Git / GitHub', 'Docker'],
+    year: '2026',
+    title: 'Système Algorithmique Omni-Trader Bot',
+    subtitle: 'Trading Systémique & Quantitative',
+    description: 'Conception et développement d\'un bot automatisé intégrant la structure Smart Money (BOS, CHoCH, Order Blocks) pour XAUUSD et EURUSD.',
+    type: 'project',
+    tags: ['Python', 'Smart Money Concepts', 'REST API', 'TradingView'],
   },
   {
-    title: 'Product & Analytics',
-    skills: ['Trading Quantitative (SMC / FVG)', 'UI/UX Design (Figma)', 'System Design', 'Agile / Scrum'],
+    year: '2025 - 2026',
+    title: 'Licence 1 Informatique & Ingénierie Web',
+    subtitle: 'IPNet Institute of Technology',
+    description: 'Formation spécialisée en génie logiciel, algorithmique avancée, structures de données avec Python/JS et réseaux (CCNA).',
+    type: 'education',
+    tags: ['Computer Science', 'Python', 'Web/Mobile', 'Networks'],
   },
 ];
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen w-full bg-[#0F172A] pt-28 pb-20 text-white">
-      <div className="mx-auto max-w-5xl px-6">
+    <main className="min-h-screen w-full bg-primary-dark text-white pt-28 pb-20 px-6">
+      <div className="mx-auto max-w-5xl">
         
-        {/* En-tête de page */}
-        <div className="mb-16">
-          <span className="text-xs font-bold tracking-widest text-[#00F2FE] uppercase">
-            Ingénieur Logiciel & WebGL
-          </span>
-          <h1 className="mt-2 text-4xl font-black sm:text-5xl">
-            À propos de <span className="text-[#00F2FE]">moi</span>
-          </h1>
-          <div className="mt-4 h-1 w-24 bg-[#00F2FE]"></div>
-        </div>
+        {/* SECTION PRESENTATION */}
+        <section className="mb-20">
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="text-xs font-mono font-semibold uppercase tracking-widest text-amber-gold border border-amber-gold/30 px-3 py-1 rounded-full bg-amber-gold/10 inline-block mb-4">
+              À Propos de moi
+            </span>
+            <h1 className="font-poppins text-4xl font-black tracking-tight sm:text-6xl text-white mb-6">
+              Bâtir des outils <span className="text-amber-gold">scalables</span> & des expériences <span className="text-ice-blue">interactives</span>.
+            </h1>
+          </motion.div>
 
-        {/* Section Biographie */}
-        <div className="mb-16 grid grid-cols-1 gap-12 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6 text-slate-300 leading-relaxed text-lg">
-            <p>
-              Je suis <strong className="text-white">BAWA Abdoul-Madjid (ABRO)</strong>, étudiant en ingénierie informatique spécialisé en développement Web, Mobile et architectures IA.
-            </p>
-            <p>
-              Passionné par la création de solutions numériques à fort impact, je conçois des applications hautement performantes capables de résoudre des défis opérationnels complexes pour les entreprises et grands marchands. Mon travail s'articule autour d'une alliance entre une UI/UX soignée, des graphismes 3D interactifs (GLSL) et une logique backend solide.
-            </p>
-            <p className="text-base text-slate-400">
-              En parallèle de l'ingénierie logicielle, je pratique le trading quantitatif et technique (Smart Money Concepts, Market Structure Shifts, Liquidity Mapping), une discipline qui renforce ma rigueur analytique et ma gestion du risque dans le code.
-            </p>
-          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+            <div className="md:col-span-2 space-y-4 text-slate-300 text-sm leading-relaxed">
+              <p>
+                Actuellement en cursus d'ingénierie logicielle spécialisé en développement Web & Mobile, je me passionne pour la création de solutions technologiques complètes : des architectures backend robustes aux interfaces utilisateurs 3D immersives.
+              </p>
+              <p>
+                Parallèlement à mon profil de développeur, je suis swing trader & scalper actif. Cette double compétence me permet d'appliquer la rigueur algorithmique, la gestion de données en temps réel et les patterns quantitatifs dans tous mes projets informatiques.
+              </p>
+            </div>
 
-          {/* Quick Stats Box */}
-          <div className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-6 backdrop-blur-sm">
-            <h3 className="text-sm font-bold tracking-wider text-[#00F2FE] uppercase">Focus Actuel</h3>
-            <ul className="space-y-4 text-sm text-slate-300">
-              <li className="flex flex-col">
-                <span className="text-xs text-slate-500">Spécialisation</span>
-                <span className="font-semibold text-white">Fullstack & Frontend AI</span>
-              </li>
-              <li className="flex flex-col">
-                <span className="text-xs text-slate-500">Localisation</span>
-                <span className="font-semibold text-white">Lomé, Togo 🇹🇬</span>
-              </li>
-              <li className="flex flex-col">
-                <span className="text-xs text-slate-500">Stack Principale</span>
-                <span className="font-semibold text-white">Next.js, Python, PostgreSQL</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Section Grille de Compétences */}
-        <div>
-          <h2 className="mb-8 text-2xl font-bold text-white">
-            Stack Technique & Outillage
-          </h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {skillsCategory.map((cat, idx) => (
-              <div 
-                key={idx}
-                className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 transition-all duration-300 hover:border-cyan-500/40"
-              >
-                <h3 className="mb-4 text-base font-bold text-[#00F2FE]">{cat.title}</h3>
-                <div className="flex flex-wrap gap-2">
-                  {cat.skills.map((skill, sIdx) => (
-                    <span 
-                      key={sIdx}
-                      className="rounded-lg bg-slate-800/80 px-3 py-1.5 text-xs font-medium text-slate-200 border border-slate-700/50"
-                    >
-                      {skill}
-                    </span>
-                  ))}
+            {/* Quick Stats Card */}
+            <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/70 p-6 backdrop-blur-md space-y-4">
+              <h3 className="font-poppins text-sm font-bold text-white uppercase tracking-wider border-b border-slate-800 pb-2">
+                En Résumé
+              </h3>
+              <div className="space-y-3 font-mono text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Focus Core :</span>
+                  <span className="text-ice-blue font-semibold">Fullstack & AI</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Trading :</span>
+                  <span className="text-amber-gold font-semibold">XAUUSD / EURUSD</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Architecture :</span>
+                  <span className="text-slate-200">Microservices / SaaS</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Base DB :</span>
+                  <span className="text-ice-blue font-semibold">PostgreSQL</span>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* SECTION TIMELINE */}
+        <section className="py-8">
+          <div className="mb-12">
+            <h2 className="font-poppins text-2xl font-bold tracking-tight text-white sm:text-3xl mb-2">
+              Parcours & Jalons
+            </h2>
+            <p className="text-xs text-ice-blue/70 font-mono">
+              Projets majeurs, formation académique et hackathons.
+            </p>
+          </div>
+
+          <div className="relative border-l border-ice-blue/20 ml-4 md:ml-32 space-y-12">
+            {TIMELINE_DATA.map((item, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                className="relative pl-8 md:pl-10"
+              >
+                {/* Anneau lumineux sur l'axe */}
+                <div className="absolute -left-2.25 top-1.5 h-4 w-4 rounded-full border-2 border-amber-gold bg-primary-dark shadow-[0_0_10px_rgba(255,180,0,0.8)]" />
+
+                {/* Badge d'année aligné sur la gauche pour grands écrans */}
+                <span className="md:absolute md:-left-32 md:top-1 font-mono text-xs font-bold text-amber-gold bg-amber-gold/10 border border-amber-gold/30 px-2.5 py-1 rounded-md inline-block mb-2 md:mb-0">
+                  {item.year}
+                </span>
+
+                {/* Contenu du jalon */}
+                <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/60 p-6 backdrop-blur-md hover:border-amber-gold/40 transition-all">
+                  <h3 className="font-poppins text-lg font-bold text-white mb-1">
+                    {item.title}
+                  </h3>
+                  <h4 className="text-xs font-mono text-ice-blue mb-3">
+                    {item.subtitle}
+                  </h4>
+                  <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                    {item.description}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {item.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary-dark text-ice-blue border border-ice-blue/20"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
             ))}
           </div>
-        </div>
+        </section>
 
       </div>
-    </div>
+    </main>
   );
 }

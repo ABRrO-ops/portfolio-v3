@@ -1,9 +1,21 @@
 @import "tailwindcss";
 
-html,
+/* vscode-css-disable-unknown-at-rules */
+@theme {
+  --font-poppins: var(--font-poppins), sans-serif;
+  --font-roboto: var(--font-roboto), sans-serif;
+  --font-mono: var(--font-mono), monospace;
+
+  --color-primary-dark: #1B262C;
+  --color-ice-blue: #BBE1FA;
+  --color-amber-gold: #FFB400;
+  --color-light-bg: #F9F9F9;
+}
+
 body {
-  margin: 0;
-  padding: 0;
-  overflow-x: hidden;
-  background-color: #0F172A;
+  font-family: var(--font-roboto);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-poppins);
 }
