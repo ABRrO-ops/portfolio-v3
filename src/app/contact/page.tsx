@@ -89,14 +89,28 @@ function ContactCard({ icon: Icon, title, value, href, tag }: ContactCardProps) 
 
 export default function ContactPage() {
   const { t } = useLanguage();
-  const [viewMode, setViewMode] = useState<'cli' | 'gui'>('gui');
+  const [viewMode, setViewMode] = useState<'cli' | 'gui'>('cli');
+
+  // Charge la police Fira Code directement
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const linkId = 'fira-code-font';
+      if (!document.getElementById(linkId)) {
+        const link = document.createElement('link');
+        link.id = linkId;
+        link.href = 'https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&display=swap';
+        link.rel = 'stylesheet';
+        document.head.appendChild(link);
+      }
+    }
+  }, []);
 
   // ÉTAT CLI
   const [inputVal, setInputVal] = useState('');
   const [step, setStep] = useState<'idle' | 'name' | 'email' | 'message'>('idle');
   const [history, setHistory] = useState<HistoryLine[]>([
-    { type: 'output', text: 'Bienvenue sur le terminal de contact v3.0.4' },
-    { type: 'output', text: 'Tape "contact" pour initier l\'envoi d\'un message, ou "help" pour la liste.' },
+    { type: 'output', text: 'Bienvenue sur le terminal de contact sécurisé v3.0.4' },
+    { type: 'output', text: 'Tape "contact" pour initier l\'envoi d\'un message, ou "help" pour voir les commandes.' },
   ]);
 
   // ÉTAT GUI FORM
@@ -382,24 +396,29 @@ export default function ContactPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className="rounded-2xl border border-ice-blue/20 bg-[#0a1015] shadow-[0_15px_40px_rgba(0,0,0,0.6)] overflow-hidden font-mono"
+              style={{ 
+                fontFamily: "'Fira Code', Consolas, Monaco, 'Courier New', monospace",
+                letterSpacing: '0.12em'
+              }}
+              className="rounded-2xl border border-ice-blue/20 bg-[#0a1015] shadow-[0_15px_40px_rgba(0,0,0,0.6)] overflow-hidden"
             >
-              <div className="bg-[#0f171c] px-4 py-3 border-b border-ice-blue/15 flex items-center justify-between">
+              <div className="bg-[#0f171c] px-4 py-3 border-b border-ice-blue/15 flex items-center justify-between font-mono">
                 <div className="flex items-center gap-2">
                   <span className="h-3 w-3 rounded-full bg-red-500/80 inline-block" />
                   <span className="h-3 w-3 rounded-full bg-amber-gold/80 inline-block" />
                   <span className="h-3 w-3 rounded-full bg-green-500/80 inline-block" />
                 </div>
-                <div className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <div className="text-[11px] text-slate-400 flex items-center gap-1.5 font-mono">
                   <TerminalIcon className="h-3.5 w-3.5 text-amber-gold" />
                   <span>abro@portfolio-v3:~</span>
                 </div>
-                <div className="text-[10px] text-ice-blue/60">bash</div>
+                <div className="text-[10px] text-ice-blue/60 font-mono">bash</div>
               </div>
 
-                  <div className="p-6 min-h-87.5 max-h-125 overflow-y-auto space-y-3 text-xs sm:text-sm">                {history.map((item, idx) => (
-                  <div key={idx} className="leading-relaxed whitespace-pre-wrap">
-                    {item.type === 'input' && <span className="text-amber-gold font-bold">{item.text}</span>}
+              <div className="p-6 min-h-87.5 max-h-125 overflow-y-auto space-y-3 text-[13px] font-mono leading-relaxed">
+                {history.map((item, idx) => (
+                  <div key={idx} className="whitespace-pre-wrap">
+                    {item.type === 'input' && <span className="text-amber-gold font-semibold">{item.text}</span>}
                     {item.type === 'output' && <span className="text-slate-300">{item.text}</span>}
                     {item.type === 'error' && <span className="text-red-400 flex items-center gap-1.5"><AlertCircle className="h-4 w-4 shrink-0" />{item.text}</span>}
                     {item.type === 'success' && <span className="text-green-400 flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0" />{item.text}</span>}
@@ -408,8 +427,8 @@ export default function ContactPage() {
                 <div ref={terminalEndRef} />
               </div>
 
-              <form onSubmit={handleCommand} className="bg-[#070b0e] px-4 py-3 border-t border-ice-blue/15 flex items-center gap-2">
-                <span className="text-amber-gold font-bold">
+              <form onSubmit={handleCommand} className="bg-[#070b0e] px-4 py-3 border-t border-ice-blue/15 flex items-center gap-2 font-mono">
+                <span className="text-amber-gold font-semibold">
                   {step === 'idle' ? '$' : step === 'name' ? 'nom >' : step === 'email' ? 'email >' : 'msg >'}
                 </span>
                 <input
@@ -417,14 +436,15 @@ export default function ContactPage() {
                   value={inputVal}
                   onChange={(e) => setInputVal(e.target.value)}
                   placeholder={step === 'idle' ? 'Tape "contact" ou "help"...' : 'Écris ta réponse ici...'}
-                  className="flex-1 bg-transparent text-white font-mono text-xs sm:text-sm focus:outline-none placeholder:text-slate-600"
+                  className="flex-1 bg-transparent text-white text-[13px] focus:outline-none placeholder:text-slate-600"
+                  style={{ letterSpacing: '0.03em' }}
                   autoFocus
                   disabled={status === 'submitting'}
                 />
                 <button
                   type="submit"
                   disabled={status === 'submitting'}
-                  className="px-3 py-1.5 rounded-lg bg-amber-gold text-primary-dark font-bold text-xs hover:bg-amber-300 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  className="px-3 py-1.5 rounded-lg bg-amber-gold text-primary-dark font-semibold text-xs hover:bg-amber-300 transition-colors flex items-center gap-1 cursor-pointer disabled:opacity-50"
                 >
                   {status === 'submitting' ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
                   <span className="hidden sm:inline">Exécuter</span>
