@@ -6,10 +6,33 @@ import dynamic from 'next/dynamic';
 import { motion } from 'framer-motion';
 import { ArrowRight, Code2, Cpu, Sparkles, Layers } from 'lucide-react';
 import { useLanguage } from '@/context/LanguageContext';
+import OrbitImages from '@/Components/OrbitImages';
+import { 
+  SiReact, 
+  SiNextdotjs, 
+  SiTypescript, 
+  SiNodedotjs, 
+  SiPostgresql, 
+  SiPython, 
+  SiTailwindcss, 
+  SiFramer 
+} from 'react-icons/si';
 
 const Canvas3D = dynamic(() => import('@/Components/Canva3D').then((mod) => mod.default), {
   ssr: false,
 });
+
+// Icônes des technologies en orbite
+const techIcons = [
+  <SiReact className="w-7 h-7 text-[#61DAFB]" key="react" />,
+  <SiNextdotjs className="w-7 h-7 text-white" key="next" />,
+  <SiTypescript className="w-7 h-7 text-[#3178C6]" key="ts" />,
+  <SiNodedotjs className="w-7 h-7 text-[#5FA04E]" key="node" />,
+  <SiPostgresql className="w-7 h-7 text-[#4169E1]" key="postgres" />,
+  <SiPython className="w-7 h-7 text-[#3776AB]" key="python" />,
+  <SiTailwindcss className="w-7 h-7 text-[#06B6D4]" key="tailwind" />,
+  <SiFramer className="w-7 h-7 text-[#0055FF]" key="framer" />,
+];
 
 export default function HomePage() {
   const { t } = useLanguage();
@@ -77,13 +100,39 @@ export default function HomePage() {
 
         {/* BENTO GRID SKILLS & ARCHITECTURE */}
         <section className="py-16">
-          <div className="mb-10">
+          <div className="mb-6 text-center md:text-left">
             <h2 className="font-poppins text-2xl font-bold tracking-tight text-white sm:text-3xl">
               {t('skills.title')}
             </h2>
             <p className="text-sm text-ice-blue/70 mt-1">{t('skills.subtitle')}</p>
           </div>
 
+          {/* ANIMATION ORBIT IMAGES */}
+        <div className="relative my-2 flex justify-center items-center max-w-xl mx-auto h-[220px] overflow-hidden">
+          <OrbitImages
+            itemsList={techIcons}
+            shape="ellipse"
+            baseWidth={800}
+            radiusX={340}
+            radiusY={90}
+            rotation={-6}
+            itemSize={48}
+            duration={30}
+            showPath={true}
+            pathColor="rgba(245, 158, 11, 0.3)"
+            pathWidth={1.5}
+            responsive={true}
+            centerContent={
+              <div className="text-center px-4 py-2 bg-slate-950/80 rounded-full border border-amber-gold/30 backdrop-blur-md shadow-[0_0_20px_rgba(255,180,0,0.15)]">
+                <span className="text-xs font-semibold uppercase tracking-wider text-amber-gold">
+                  Tech Ecosystem
+                </span>
+              </div>
+            }
+          />
+        </div>
+
+          {/* CARDS GRID */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card 1 */}
             <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/60 p-6 backdrop-blur-md hover:border-amber-gold/40 transition-all">

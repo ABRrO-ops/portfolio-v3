@@ -15,11 +15,13 @@ import {
   MessageSquare,
   LucideIcon 
 } from 'lucide-react';
+
+import { FaGithub, FaLinkedin, FaInstagram } from 'react-icons/fa6';
 import { useLanguage } from '@/context/LanguageContext';
 
 interface HistoryLine {
   type: 'input' | 'output' | 'error' | 'success';
-  text: string;
+  text: React.ReactNode;
 }
 
 interface ContactCardProps {
@@ -153,14 +155,78 @@ export default function ContactPage() {
 
     if (step === 'idle') {
       const newHistory = [...history, { type: 'input' as const, text: `$ ${cmd}` }];
+      const cleanCmd = cmd.toLowerCase();
       
-      if (cmd.toLowerCase() === 'help') {
-        newHistory.push({ type: 'output', text: 'Commandes disponibles:\n- contact : Démarrer l\'envoi\n- clear : Effacer l\'écran\n- about : Statut système\n- socials : Réseaux pro' });
-      } else if (cmd.toLowerCase() === 'clear') {
+      if (cleanCmd === 'help') {
+        newHistory.push({ 
+          type: 'output', 
+          text: (
+            <div className="space-y-1 text-slate-300">
+              <p className="text-amber-gold font-semibold">Commandes disponibles :</p>
+              <p>- <span className="text-amber-300">contact</span> : Démarrer l'envoi</p>
+              <p>- <span className="text-amber-300">about</span> : À propos de moi</p>
+              <p>- <span className="text-amber-300">socials</span> : Réseaux pro</p>
+              <p>- <span className="text-amber-300">clear</span> : Effacer l'écran</p>
+            </div>
+          )
+        });
+      } else if (cleanCmd === 'about') {
+        newHistory.push({
+          type: 'output',
+          text: (
+            <div className="text-slate-300 space-y-1 my-1">
+              <p className="text-amber-gold font-semibold">⚡ Abdoul-Madjid BAWA (ABRO)</p>
+              <p>Développeur Web & Mobile, Trading Algorithmique & Interfaces Immersives.</p>
+              <p className="text-slate-400 text-xs">Conception de solutions digitales haute performance et automatisation.</p>
+            </div>
+          )
+        });
+      } else if (cleanCmd === 'socials') {
+        newHistory.push({
+          type: 'output',
+          text: (
+            <div className="flex flex-wrap items-center gap-3 my-1 text-xs text-slate-200">
+              <a 
+                href="https://github.com/ABRro-ops" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 hover:text-amber-gold transition-colors"
+              >
+                <FaGithub className="w-4 h-4 text-amber-gold" />
+                <span>ABRro-ops</span>
+              </a>
+
+              <span className="text-slate-600">|</span>
+
+              <a 
+                href="https://linkedin.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 hover:text-amber-gold transition-colors"
+              >
+                <FaLinkedin className="w-4 h-4 text-amber-gold" />
+                <span>Abdoul-Madjid BAWA</span>
+              </a>
+
+              <span className="text-slate-600">|</span>
+
+              <a 
+                href="https://instagram.com" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 hover:text-amber-gold transition-colors"
+              >
+                <FaInstagram className="w-4 h-4 text-amber-gold" />
+                <span>37</span>
+              </a>
+            </div>
+          )
+        });
+      } else if (cleanCmd === 'clear') {
         setHistory([]);
         setInputVal('');
         return;
-      } else if (cmd.toLowerCase() === 'contact') {
+      } else if (cleanCmd === 'contact') {
         setStep('name');
         newHistory.push({ type: 'output', text: '>>> Initialisation du formulaire...\nQuel est ton nom ?' });
       } else {
@@ -419,7 +485,7 @@ export default function ContactPage() {
                 {history.map((item, idx) => (
                   <div key={idx} className="whitespace-pre-wrap">
                     {item.type === 'input' && <span className="text-amber-gold font-semibold">{item.text}</span>}
-                    {item.type === 'output' && <span className="text-slate-300">{item.text}</span>}
+                    {item.type === 'output' && <div className="text-slate-300">{item.text}</div>}
                     {item.type === 'error' && <span className="text-red-400 flex items-center gap-1.5"><AlertCircle className="h-4 w-4 shrink-0" />{item.text}</span>}
                     {item.type === 'success' && <span className="text-green-400 flex items-center gap-1.5"><CheckCircle2 className="h-4 w-4 shrink-0" />{item.text}</span>}
                   </div>
