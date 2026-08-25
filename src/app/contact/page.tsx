@@ -437,7 +437,7 @@ export default function ContactPage() {
                   onChange={(e) => setInputVal(e.target.value)}
                   placeholder={step === 'idle' ? 'Tape "contact" ou "help"...' : 'Écris ta réponse ici...'}
                   className="flex-1 bg-transparent text-white text-[13px] focus:outline-none placeholder:text-slate-600"
-                  style={{ letterSpacing: '0.03em' }}
+                  style={{ letterSpacing: '0.12em' }}
                   autoFocus
                   disabled={status === 'submitting'}
                 />
