@@ -1,17 +1,22 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
+import { supabase } from '@/lib/supabase';
 
 interface TimelineItem {
+  id?: string;
   year: string;
-  key: 'tcc' | 'flyrank' | 'omni' | 'degree';
-  type: 'education' | 'project' | 'achievement' | 'internship';
+  key?: 'tcc' | 'flyrank' | 'omni' | 'degree';
+  title?: string;
+  subtitle?: string;
+  description?: string;
+  type?: 'education' | 'project' | 'achievement' | 'internship';
   tags: string[];
 }
 
-const TIMELINE_DATA: TimelineItem[] = [
+const LOCAL_TIMELINE: TimelineItem[] = [
   {
     year: '2026',
     key: 'tcc',
@@ -40,6 +45,25 @@ const TIMELINE_DATA: TimelineItem[] = [
 
 export default function AboutPage() {
   const { lang, t } = useLanguage();
+  const [dbExperiences, setDbExperiences] = useState<TimelineItem[]>([]);
+
+  useEffect(() => {
+    const fetchExperiences = async () => {
+      const { data, error } = await supabase
+        .from('experiences')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        setDbExperiences(data);
+      }
+    };
+
+    fetchExperiences();
+  }, []);
+
+  // Fusion : Les nouvelles expériences s'affichent en haut de la Timeline
+  const allTimelineItems = [...dbExperiences, ...LOCAL_TIMELINE];
 
   return (
     <main className="min-h-screen w-full bg-primary-dark text-white pt-28 pb-20 px-6">
@@ -134,9 +158,9 @@ export default function AboutPage() {
           </div>
 
           <div className="relative border-l border-ice-blue/20 ml-4 md:ml-32 space-y-12">
-            {TIMELINE_DATA.map((item, idx) => (
+            {allTimelineItems.map((item, idx) => (
               <motion.div
-                key={idx}
+                key={item.id || `timeline-${idx}`}
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
@@ -151,16 +175,16 @@ export default function AboutPage() {
 
                 <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/60 p-6 backdrop-blur-md hover:border-amber-gold/40 transition-all">
                   <h3 className="font-poppins text-lg font-bold text-white mb-1">
-                    {t(`about.timeline.${item.key}.title`)}
+                    {item.key ? t(`about.timeline.${item.key}.title`) : item.title}
                   </h3>
                   <h4 className="text-xs font-mono text-ice-blue mb-3">
-                    {t(`about.timeline.${item.key}.subtitle`)}
+                    {item.key ? t(`about.timeline.${item.key}.subtitle`) : item.subtitle}
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                    {t(`about.timeline.${item.key}.description`)}
+                    {item.key ? t(`about.timeline.${item.key}.description`) : item.description}
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {item.tags.map((tag) => (
+                    {item.tags?.map((tag) => (
                       <span
                         key={tag}
                         className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary-dark text-ice-blue border border-ice-blue/20"

@@ -94,8 +94,11 @@ export default function ProjectCard({ project }: { project: Project }) {
 
           {/* Tags Tech */}
           <div className="flex flex-wrap gap-1.5 mb-6">
-            {project.tags.map((tag) => (
-              <span key={tag} className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary-dark text-ice-blue border border-ice-blue/20">
+            {(project.tags || []).map((tag) => (
+              <span 
+                key={tag} 
+                className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary-dark text-ice-blue border border-ice-blue/20"
+              >
                 {tag}
               </span>
             ))}

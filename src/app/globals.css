@@ -22,3 +22,11 @@ h1, h2, h3, h4, h5, h6 {
 .force-cli-font, .force-cli-font * {
   font-family: 'Fira Code', 'JetBrains Mono', Consolas, Monaco, 'Andale Mono', monospace !important;
 }
+@layer components {
+  .input-admin {
+    @apply w-full rounded-xl border border-white/10 bg-primary-dark/90 px-3.5 py-2.5 text-xs text-white focus:border-amber-gold focus:outline-none transition-all placeholder:text-slate-500;
+  }
+  .btn-submit {
+    @apply w-full rounded-xl bg-amber-gold px-6 py-3 text-xs font-bold text-primary-dark transition-all hover:bg-amber-300 shadow-[0_0_20px_rgba(255,180,0,0.3)] disabled:opacity-50 mt-4 cursor-pointer;
+  }
+}
