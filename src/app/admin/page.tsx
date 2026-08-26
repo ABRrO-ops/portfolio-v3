@@ -55,15 +55,14 @@ export default function AdminDashboard() {
   });
   const [projectFile, setProjectFile] = useState<File | null>(null);
 
+  // FORMULAIRE EXPÉRIENCE (Nouveau format 5 champs obligatoires)
   const [expForm, setExpForm] = useState({
-    role: '',
-    company: '',
-    location: '',
-    type: 'Stage',
-    start_date: '',
-    end_date: '',
-    description: '',
-    stack: '',
+    role: '',         // 1. Titre (ex: Data Engineer)
+    company: '',      // 2. Entreprise (ex: Google) -> Résultat : Data Engineer at Google
+    type: '',         // 3. Type/Sub (ex: Lomé, Togo • Équipe Commit & Pray)
+    start_date: '',   // 4. Année (ex: 2026)
+    description: '',  // 5. Description
+    stack: '',        // 6. Technologies (Badges bleus)
     display_order: 0,
   });
 
@@ -114,13 +113,11 @@ export default function AdminDashboard() {
     e.preventDefault();
     setLoading(true);
     setAuthError(null);
-
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
       if (error) throw error;
     } catch (err: any) {
       setAuthError(err.message || 'Identifiants invalides.');
@@ -139,7 +136,7 @@ export default function AdminDashboard() {
         const { data } = await supabase.from('projects').select('*').order('display_order', { ascending: true });
         setProjectsList(data || []);
       } else if (activeTab === 'experiences') {
-        const { data } = await supabase.from('experiences').select('*').order('display_order', { ascending: true });
+        const { data } = await supabase.from('experiences').select('*').order('created_at', { ascending: false });
         setExperiencesList(data || []);
       } else if (activeTab === 'flyrank') {
         const { data } = await supabase.from('flyrank_assignments').select('*').order('display_order', { ascending: true });
@@ -155,28 +152,19 @@ export default function AdminDashboard() {
 
   // HELPER UPLOAD NETTOYÉ ET SÉCURISÉ
   const uploadToStorage = async (file: File, folder: string) => {
-    const cleanFileName = file.name
-      .toLowerCase()
-      .replace(/[^a-z0-9.]/g, '_');
-
+    const cleanFileName = file.name.toLowerCase().replace(/[^a-z0-9.]/g, '_');
     const fileName = `${folder}_${Date.now()}_${cleanFileName}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('portfolio-assets')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: true,
-      });
+    const { error: uploadError } = await supabase.storage.from('portfolio-assets').upload(fileName, file, {
+      cacheControl: '3600',
+      upsert: true,
+    });
 
     if (uploadError) {
       console.error('Erreur Upload Supabase Storage:', uploadError);
       throw uploadError;
     }
 
-    const { data: publicUrlData } = supabase.storage
-      .from('portfolio-assets')
-      .getPublicUrl(fileName);
-
+    const { data: publicUrlData } = supabase.storage.from('portfolio-assets').getPublicUrl(fileName);
     return publicUrlData.publicUrl;
   };
 
@@ -185,7 +173,6 @@ export default function AdminDashboard() {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
-
     try {
       let imageUrl = '';
       if (projectFile) {
@@ -210,7 +197,6 @@ export default function AdminDashboard() {
       ]);
 
       if (error) throw error;
-
       setMessage({ type: 'success', text: 'Projet ajouté avec succès dans Supabase !' });
       setProjectForm({
         title: '', subtitle: '', description: '', category: 'Web', status: 'Completed',
@@ -219,22 +205,25 @@ export default function AdminDashboard() {
       setProjectFile(null);
       fetchData();
     } catch (err: any) {
-      setMessage({ type: 'error', text: err.message || 'Erreur lors de l\'ajout du projet.' });
+      setMessage({ type: 'error', text: err.message || "Erreur lors de l'ajout du projet." });
     } finally {
       setLoading(false);
     }
   };
 
-  // 2. AJOUT EXPÉRIENCE
+  // 2. AJOUT EXPÉRIENCE (Structure 5 champs obligatoires)
   const handleAddExperience = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
-
     try {
       const { error } = await supabase.from('experiences').insert([
         {
-          ...expForm,
+          role: expForm.role,
+          company: expForm.company,
+          type: expForm.type,
+          start_date: expForm.start_date,
+          description: expForm.description,
           stack: expForm.stack.split(',').map(s => s.trim()).filter(Boolean),
           display_order: Number(expForm.display_order),
         },
@@ -242,8 +231,16 @@ export default function AdminDashboard() {
 
       if (error) throw error;
 
-      setMessage({ type: 'success', text: 'Expérience ajoutée avec succès !' });
-      setExpForm({ role: '', company: '', location: '', type: 'Stage', start_date: '', end_date: '', description: '', stack: '', display_order: 0 });
+      setMessage({ type: 'success', text: 'Expérience / Jalon ajouté avec succès !' });
+      setExpForm({
+        role: '',
+        company: '',
+        type: '',
+        start_date: '',
+        description: '',
+        stack: '',
+        display_order: 0,
+      });
       fetchData();
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
@@ -257,7 +254,6 @@ export default function AdminDashboard() {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
-
     try {
       const { error } = await supabase.from('flyrank_assignments').insert([
         {
@@ -286,12 +282,11 @@ export default function AdminDashboard() {
       setMessage({ type: 'error', text: 'Veuillez joindre le fichier/diplôme (PDF ou PNG).' });
       return;
     }
+
     setLoading(true);
     setMessage(null);
-
     try {
       const fileUrl = await uploadToStorage(certifFile, 'certifications');
-
       const { error } = await supabase.from('certifications').insert([
         {
           title: certifForm.title,
@@ -304,23 +299,21 @@ export default function AdminDashboard() {
       ]);
 
       if (error) throw error;
-
       setMessage({ type: 'success', text: 'Certification et document ajoutés avec succès !' });
       setCertifForm({ title: '', issuer: '', issue_date: '', credential_url: '', display_order: 0 });
       setCertifFile(null);
       fetchData();
     } catch (err: any) {
-      console.error('Erreur détaillée d\'upload :', err);
-      setMessage({ type: 'error', text: err.message || 'Erreur lors de l\'ajout de la certification.' });
+      console.error("Erreur détaillée d'upload:", err);
+      setMessage({ type: 'error', text: err.message || "Erreur lors de l'ajout de la certification." });
     } finally {
       setLoading(false);
     }
   };
 
-  // SUPPRESSION GENERIQUE
+  // SUPPRESSION GÉNÉRIQUE
   const handleDelete = async (table: string, id: string) => {
     if (!confirm('Voulez-vous vraiment supprimer cet élément ?')) return;
-
     try {
       const { error } = await supabase.from(table).delete().eq('id', id);
       if (error) throw error;
@@ -442,7 +435,7 @@ export default function AdminDashboard() {
             { id: 'experiences', label: 'Expériences', icon: Briefcase },
             { id: 'flyrank', label: 'FlyRank Stage', icon: Layers },
             { id: 'certifs', label: 'Certifications', icon: Award },
-          ].map(tab => {
+          ].map((tab) => {
             const Icon = tab.icon;
             return (
               <button
@@ -477,72 +470,142 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Titre *</label>
-                  <input type="text" required value={projectForm.title} onChange={e => setProjectForm({ ...projectForm, title: e.target.value })} placeholder="CinAI Platform" className="input-admin" />
+                  <input
+                    type="text"
+                    required
+                    value={projectForm.title}
+                    onChange={(e) => setProjectForm({ ...projectForm, title: e.target.value })}
+                    placeholder="CineAI Platform"
+                    className="input-admin"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Sous-titre / Slogan</label>
-                  <input type="text" value={projectForm.subtitle} onChange={e => setProjectForm({ ...projectForm, subtitle: e.target.value })} placeholder="Plateforme IA de recommandation" className="input-admin" />
+                  <input
+                    type="text"
+                    value={projectForm.subtitle}
+                    onChange={(e) => setProjectForm({ ...projectForm, subtitle: e.target.value })}
+                    placeholder="Plateforme IA de recommandation"
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Description *</label>
-                <textarea rows={3} required value={projectForm.description} onChange={e => setProjectForm({ ...projectForm, description: e.target.value })} placeholder="Description détaillée du projet..." className="input-admin resize-none" />
+                <textarea
+                  rows={3}
+                  required
+                  value={projectForm.description}
+                  onChange={(e) => setProjectForm({ ...projectForm, description: e.target.value })}
+                  placeholder="Description détaillée du projet..."
+                  className="input-admin resize-none"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Catégorie</label>
-                  <select value={projectForm.category} onChange={e => setProjectForm({ ...projectForm, category: e.target.value })} className="input-admin">
+                  <select
+                    value={projectForm.category}
+                    onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
+                    className="input-admin"
+                  >
                     <option value="Web">Web / Fullstack</option>
                     <option value="Systems">Systems / Low-level</option>
                     <option value="AI">AI / Machine Learning</option>
                     <option value="Mobile">Mobile / UI-UX</option>
                   </select>
                 </div>
+
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Statut</label>
-                  <select value={projectForm.status} onChange={e => setProjectForm({ ...projectForm, status: e.target.value })} className="input-admin">
+                  <select
+                    value={projectForm.status}
+                    onChange={(e) => setProjectForm({ ...projectForm, status: e.target.value })}
+                    className="input-admin"
+                  >
                     <option value="Completed">Terminé</option>
                     <option value="In Progress">En cours</option>
                     <option value="Winner">Gagnant Hackathon</option>
                   </select>
                 </div>
+
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Ordre d'affichage</label>
-                  <input type="number" value={projectForm.display_order} onChange={e => setProjectForm({ ...projectForm, display_order: Number(e.target.value) })} className="input-admin" />
+                  <input
+                    type="number"
+                    value={projectForm.display_order}
+                    onChange={(e) => setProjectForm({ ...projectForm, display_order: Number(e.target.value) })}
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Technologies (séparées par virgules)</label>
-                  <input type="text" value={projectForm.stack} onChange={e => setProjectForm({ ...projectForm, stack: e.target.value })} placeholder="Next.js, TypeScript, Supabase" className="input-admin" />
+                  <input
+                    type="text"
+                    value={projectForm.stack}
+                    onChange={(e) => setProjectForm({ ...projectForm, stack: e.target.value })}
+                    placeholder="Next.js, TypeScript, Supabase"
+                    className="input-admin"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Points forts (séparés par virgules)</label>
-                  <input type="text" value={projectForm.highlights} onChange={e => setProjectForm({ ...projectForm, highlights: e.target.value })} placeholder="Cache Redis, 99.9% Uptime" className="input-admin" />
+                  <input
+                    type="text"
+                    value={projectForm.highlights}
+                    onChange={(e) => setProjectForm({ ...projectForm, highlights: e.target.value })}
+                    placeholder="Cache Redis, 99.9% Uptime"
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">URL GitHub</label>
-                  <input type="url" value={projectForm.github_url} onChange={e => setProjectForm({ ...projectForm, github_url: e.target.value })} placeholder="https://github.com/..." className="input-admin" />
+                  <input
+                    type="url"
+                    value={projectForm.github_url}
+                    onChange={(e) => setProjectForm({ ...projectForm, github_url: e.target.value })}
+                    placeholder="https://github.com/..."
+                    className="input-admin"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">URL Démo / Site Live</label>
-                  <input type="url" value={projectForm.demo_url} onChange={e => setProjectForm({ ...projectForm, demo_url: e.target.value })} placeholder="https://..." className="input-admin" />
+                  <input
+                    type="url"
+                    value={projectForm.demo_url}
+                    onChange={(e) => setProjectForm({ ...projectForm, demo_url: e.target.value })}
+                    placeholder="https://..."
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Image Couverture (Upload Storage)</label>
-                <input type="file" accept="image/*" onChange={e => setProjectFile(e.target.files?.[0] || null)} className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-amber-gold file:text-primary-dark file:font-bold file:text-xs" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setProjectFile(e.target.files?.[0] || null)}
+                  className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-amber-gold file:text-primary-dark file:font-bold file:text-xs"
+                />
               </div>
 
               <div className="flex items-center gap-2 pt-2">
-                <input type="checkbox" id="featured" checked={projectForm.featured} onChange={e => setProjectForm({ ...projectForm, featured: e.target.checked })} className="h-4 w-4 rounded accent-amber-gold" />
+                <input
+                  type="checkbox"
+                  id="featured"
+                  checked={projectForm.featured}
+                  onChange={(e) => setProjectForm({ ...projectForm, featured: e.target.checked })}
+                  className="h-4 w-4 rounded accent-amber-gold"
+                />
                 <label htmlFor="featured" className="text-xs font-mono text-slate-300">Mettre en vedette (Featured)</label>
               </div>
 
@@ -551,7 +614,6 @@ export default function AdminDashboard() {
               </button>
             </form>
 
-            {/* LISTE DES PROJETS ACTUELS */}
             <div className="rounded-2xl border border-white/10 bg-[#0f171c]/60 p-5 space-y-4">
               <h3 className="text-sm font-mono font-bold text-amber-gold border-b border-white/10 pb-2">
                 Projets en BDD ({projectsList.length})
@@ -573,65 +635,106 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* 2. TAB EXPÉRIENCES */}
+        {/* 2. TAB EXPÉRIENCES (NOUVELLE STRUCTURE DE FORMULAIRE OBLIGATOIRE) */}
         {activeTab === 'experiences' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <form onSubmit={handleAddExperience} className="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0f171c]/80 p-6 backdrop-blur-md space-y-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                <PlusCircle className="h-5 w-5 text-amber-gold" /> Nouvelle Expérience
+                <PlusCircle className="h-5 w-5 text-amber-gold" /> Nouvelle Expérience / Jalon
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Poste / Rôle *</label>
-                  <input type="text" required value={expForm.role} onChange={e => setExpForm({ ...expForm, role: e.target.value })} placeholder="Développeur AI Fullstack" className="input-admin" />
+                  <label className="block text-xs font-mono text-slate-300 mb-1">Titre / Rôle *</label>
+                  <input
+                    type="text"
+                    required
+                    value={expForm.role}
+                    onChange={(e) => setExpForm({ ...expForm, role: e.target.value })}
+                    placeholder="Ex: Data Engineer"
+                    className="input-admin"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Entreprise *</label>
-                  <input type="text" required value={expForm.company} onChange={e => setExpForm({ ...expForm, company: e.target.value })} placeholder="FlyRank" className="input-admin" />
+                  <label className="block text-xs font-mono text-slate-300 mb-1">Entreprise / Organisation *</label>
+                  <input
+                    type="text"
+                    required
+                    value={expForm.company}
+                    onChange={(e) => setExpForm({ ...expForm, company: e.target.value })}
+                    placeholder="Ex: Google"
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Type</label>
-                  <input type="text" value={expForm.type} onChange={e => setExpForm({ ...expForm, type: e.target.value })} placeholder="Stage / Alternance" className="input-admin" />
+                  <label className="block text-xs font-mono text-slate-300 mb-1">Type / Lieu (Texte en bleu) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={expForm.type}
+                    onChange={(e) => setExpForm({ ...expForm, type: e.target.value })}
+                    placeholder="Ex: Lomé, Togo • Équipe Commit & Pray"
+                    className="input-admin"
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Début</label>
-                  <input type="text" value={expForm.start_date} onChange={e => setExpForm({ ...expForm, start_date: e.target.value })} placeholder="Juillet 2026" className="input-admin" />
-                </div>
-                <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Fin</label>
-                  <input type="text" value={expForm.end_date} onChange={e => setExpForm({ ...expForm, end_date: e.target.value })} placeholder="Août 2026 / Présent" className="input-admin" />
+                  <label className="block text-xs font-mono text-slate-300 mb-1">Année / Période (Macaron jaune) *</label>
+                  <input
+                    type="text"
+                    required
+                    value={expForm.start_date}
+                    onChange={(e) => setExpForm({ ...expForm, start_date: e.target.value })}
+                    placeholder="Ex: 2026"
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Description *</label>
-                <textarea rows={3} required value={expForm.description} onChange={e => setExpForm({ ...expForm, description: e.target.value })} placeholder="Missions et réalisations principales..." className="input-admin resize-none" />
+                <textarea
+                  rows={3}
+                  required
+                  value={expForm.description}
+                  onChange={(e) => setExpForm({ ...expForm, description: e.target.value })}
+                  placeholder="Missions et réalisations principales..."
+                  className="input-admin resize-none"
+                />
               </div>
 
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1">Technologies utilisées</label>
-                <input type="text" value={expForm.stack} onChange={e => setExpForm({ ...expForm, stack: e.target.value })} placeholder="Python, FastAPI, Next.js" className="input-admin" />
+                <label className="block text-xs font-mono text-slate-300 mb-1">Technologies / Tags (séparés par virgules) *</label>
+                <input
+                  type="text"
+                  required
+                  value={expForm.stack}
+                  onChange={(e) => setExpForm({ ...expForm, stack: e.target.value })}
+                  placeholder="Ex: Hackathon, Civic Tech, UI/UX, Figma"
+                  className="input-admin"
+                />
               </div>
 
               <button type="submit" disabled={loading} className="btn-submit">
-                {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Ajouter Expérience'}
+                {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Ajouter au Parcours'}
               </button>
             </form>
 
             <div className="rounded-2xl border border-white/10 bg-[#0f171c]/60 p-5 space-y-4">
               <h3 className="text-sm font-mono font-bold text-amber-gold border-b border-white/10 pb-2">
-                Expériences ({experiencesList.length})
+                Expériences / Jalons ({experiencesList.length})
               </h3>
               <div className="space-y-3 max-h-150 overflow-y-auto">
                 {experiencesList.map((e) => (
-                  <div key={e.id} className="p-3 rounded-xl bg-primary-dark/80 border border-white/5 flex items-start justify-between">
+                  <div key={e.id} className="p-3 rounded-xl bg-primary-dark/80 border border-white/5 flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-bold text-white">{e.role}</p>
-                      <p className="text-xs text-slate-400">{e.company} ({e.start_date} - {e.end_date})</p>
+                      <p className="text-sm font-bold text-white">
+                        {e.role} {e.company ? `at ${e.company}` : ''}
+                      </p>
+                      <p className="text-xs text-cyan-400 font-mono">{e.type}</p>
+                      <span className="text-[10px] text-amber-gold font-mono">{e.start_date}</span>
                     </div>
                     <button onClick={() => handleDelete('experiences', e.id)} className="text-slate-500 hover:text-rose-400 p-1">
                       <Trash2 className="h-4 w-4" />
@@ -648,38 +751,75 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <form onSubmit={handleAddFlyrank} className="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0f171c]/80 p-6 backdrop-blur-md space-y-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                <PlusCircle className="h-5 w-5 text-amber-gold" /> Mission / Devoir FlyRank (Feuille 2)
+                <PlusCircle className="h-5 w-5 text-amber-gold" /> Mission / Devoir FlyRank
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Titre du Devoir / Mission *</label>
-                  <input type="text" required value={flyrankForm.title} onChange={e => setFlyrankForm({ ...flyrankForm, title: e.target.value })} placeholder="Intégration Agent LLM RAG" className="input-admin" />
+                  <label className="block text-xs font-mono text-slate-300 mb-1">Titre du Devoir/Mission *</label>
+                  <input
+                    type="text"
+                    required
+                    value={flyrankForm.title}
+                    onChange={(e) => setFlyrankForm({ ...flyrankForm, title: e.target.value })}
+                    placeholder="Intégration Agent LLM RAG"
+                    className="input-admin"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Module / Cohorte</label>
-                  <input type="text" value={flyrankForm.module} onChange={e => setFlyrankForm({ ...flyrankForm, module: e.target.value })} placeholder="AI Cohort July 2026" className="input-admin" />
+                  <input
+                    type="text"
+                    value={flyrankForm.module}
+                    onChange={(e) => setFlyrankForm({ ...flyrankForm, module: e.target.value })}
+                    placeholder="AI Cohort July 2026"
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Description</label>
-                <textarea rows={3} value={flyrankForm.description} onChange={e => setFlyrankForm({ ...flyrankForm, description: e.target.value })} placeholder="Détail du travail effectué..." className="input-admin resize-none" />
+                <textarea
+                  rows={3}
+                  value={flyrankForm.description}
+                  onChange={(e) => setFlyrankForm({ ...flyrankForm, description: e.target.value })}
+                  placeholder="Détail du travail effectué..."
+                  className="input-admin resize-none"
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Stack (séparée par virgules)</label>
-                <input type="text" value={flyrankForm.stack} onChange={e => setFlyrankForm({ ...flyrankForm, stack: e.target.value })} placeholder="LangChain, OpenAI, Pinecone" className="input-admin" />
+                <input
+                  type="text"
+                  value={flyrankForm.stack}
+                  onChange={(e) => setFlyrankForm({ ...flyrankForm, stack: e.target.value })}
+                  placeholder="LangChain, OpenAI, Pinecone"
+                  className="input-admin"
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">URL Repos GitHub</label>
-                  <input type="url" value={flyrankForm.github_url} onChange={e => setFlyrankForm({ ...flyrankForm, github_url: e.target.value })} placeholder="https://..." className="input-admin" />
+                  <input
+                    type="url"
+                    value={flyrankForm.github_url}
+                    onChange={(e) => setFlyrankForm({ ...flyrankForm, github_url: e.target.value })}
+                    placeholder="https://..."
+                    className="input-admin"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">URL Démo</label>
-                  <input type="url" value={flyrankForm.demo_url} onChange={e => setFlyrankForm({ ...flyrankForm, demo_url: e.target.value })} placeholder="https://..." className="input-admin" />
+                  <input
+                    type="url"
+                    value={flyrankForm.demo_url}
+                    onChange={(e) => setFlyrankForm({ ...flyrankForm, demo_url: e.target.value })}
+                    placeholder="https://..."
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
@@ -714,34 +854,66 @@ export default function AdminDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <form onSubmit={handleAddCertif} className="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0f171c]/80 p-6 backdrop-blur-md space-y-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
-                <PlusCircle className="h-5 w-5 text-amber-gold" /> Nouvelle Certification (Feuille 3)
+                <PlusCircle className="h-5 w-5 text-amber-gold" /> Nouvelle Certification
               </h2>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Intitulé Certif *</label>
-                  <input type="text" required value={certifForm.title} onChange={e => setCertifForm({ ...certifForm, title: e.target.value })} placeholder="Cisco CCNA - Switching & Routing" className="input-admin" />
+                  <input
+                    type="text"
+                    required
+                    value={certifForm.title}
+                    onChange={(e) => setCertifForm({ ...certifForm, title: e.target.value })}
+                    placeholder="Cisco CCNA - Switching & Routing"
+                    className="input-admin"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Organisme Délivreur *</label>
-                  <input type="text" required value={certifForm.issuer} onChange={e => setCertifForm({ ...certifForm, issuer: e.target.value })} placeholder="Cisco Systems" className="input-admin" />
+                  <input
+                    type="text"
+                    required
+                    value={certifForm.issuer}
+                    onChange={(e) => setCertifForm({ ...certifForm, issuer: e.target.value })}
+                    placeholder="Cisco Systems"
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Année / Date</label>
-                  <input type="text" value={certifForm.issue_date} onChange={e => setCertifForm({ ...certifForm, issue_date: e.target.value })} placeholder="2026" className="input-admin" />
+                  <input
+                    type="text"
+                    value={certifForm.issue_date}
+                    onChange={(e) => setCertifForm({ ...certifForm, issue_date: e.target.value })}
+                    placeholder="2026"
+                    className="input-admin"
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Lien de vérification (externe)</label>
-                  <input type="url" value={certifForm.credential_url} onChange={e => setCertifForm({ ...certifForm, credential_url: e.target.value })} placeholder="https://credly.com/..." className="input-admin" />
+                  <input
+                    type="url"
+                    value={certifForm.credential_url}
+                    onChange={(e) => setCertifForm({ ...certifForm, credential_url: e.target.value })}
+                    placeholder="https://credly.com/..."
+                    className="input-admin"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Fichier Diplôme/Certificat (PDF/PNG) *</label>
-                <input type="file" required accept="image/*,application/pdf" onChange={e => setCertifFile(e.target.files?.[0] || null)} className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-amber-gold file:text-primary-dark file:font-bold file:text-xs" />
+                <input
+                  type="file"
+                  required
+                  accept="image/*, application/pdf"
+                  onChange={(e) => setCertifFile(e.target.files?.[0] || null)}
+                  className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-amber-gold file:text-primary-dark file:font-bold file:text-xs"
+                />
               </div>
 
               <button type="submit" disabled={loading} className="btn-submit">

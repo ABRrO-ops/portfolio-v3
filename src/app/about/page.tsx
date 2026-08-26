@@ -7,13 +7,17 @@ import { supabase } from '@/lib/supabase';
 
 interface TimelineItem {
   id?: string;
-  year: string;
+  year?: string;
+  start_date?: string;
   key?: 'tcc' | 'flyrank' | 'omni' | 'degree';
+  role?: string;
+  company?: string;
   title?: string;
   subtitle?: string;
+  type?: string;
   description?: string;
-  type?: 'education' | 'project' | 'achievement' | 'internship';
-  tags: string[];
+  tags?: string[];
+  stack?: string[];
 }
 
 const LOCAL_TIMELINE: TimelineItem[] = [
@@ -62,14 +66,14 @@ export default function AboutPage() {
     fetchExperiences();
   }, []);
 
-  // Fusion : Les nouvelles expériences s'affichent en haut de la Timeline
+  // Les nouvelles expériences dynamiques s'affichent en haut de la Timeline
   const allTimelineItems = [...dbExperiences, ...LOCAL_TIMELINE];
 
   return (
     <main className="min-h-screen w-full bg-primary-dark text-white pt-28 pb-20 px-6">
       <div className="mx-auto max-w-5xl">
-        
-        {/* SECTION PRESENTATION */}
+
+        {/* SECTION PRÉSENTATION */}
         <section className="mb-20">
           <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -158,44 +162,88 @@ export default function AboutPage() {
           </div>
 
           <div className="relative border-l border-ice-blue/20 ml-4 md:ml-32 space-y-12">
-            {allTimelineItems.map((item, idx) => (
-              <motion.div
-                key={item.id || `timeline-${idx}`}
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                className="relative pl-8 md:pl-10"
-              >
-                <div className="absolute -left-2.25 top-1.5 h-4 w-4 rounded-full border-2 border-amber-gold bg-primary-dark shadow-[0_0_10px_rgba(255,180,0,0.8)]" />
+            {allTimelineItems.map((item, idx) => {
+              // Détermination de l'année (Macaron 1)
+              const displayYear = item.start_date || item.year;
 
-                <span className="md:absolute md:-left-32 md:top-1 font-mono text-xs font-bold text-amber-gold bg-amber-gold/10 border border-amber-gold/30 px-2.5 py-1 rounded-md inline-block mb-2 md:mb-0">
-                  {item.year}
-                </span>
+              // Détermination du Titre (2) (ex: Data Engineer at Google)
+              const displayTitle = item.role
+                ? `${item.role}${item.company ? ` at ${item.company}` : ''}`
+                : item.key
+                ? t(`about.timeline.${item.key}.title`)
+                : item.title;
 
-                <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/60 p-6 backdrop-blur-md hover:border-amber-gold/40 transition-all">
-                  <h3 className="font-poppins text-lg font-bold text-white mb-1">
-                    {item.key ? t(`about.timeline.${item.key}.title`) : item.title}
-                  </h3>
-                  <h4 className="text-xs font-mono text-ice-blue mb-3">
-                    {item.key ? t(`about.timeline.${item.key}.subtitle`) : item.subtitle}
-                  </h4>
-                  <p className="text-xs text-slate-300 leading-relaxed mb-4">
-                    {item.key ? t(`about.timeline.${item.key}.description`) : item.description}
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
-                    {item.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary-dark text-ice-blue border border-ice-blue/20"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+              // Détermination du Sous-titre / Type (3)
+              const displaySubtitle = item.type
+                ? item.type
+                : item.key
+                ? t(`about.timeline.${item.key}.subtitle`)
+                : item.subtitle;
+
+              // Détermination de la Description (4)
+              const displayDescription = item.description
+                ? item.description
+                : item.key
+                ? t(`about.timeline.${item.key}.description`)
+                : null;
+
+              // Détermination des Badges (5)
+              const displayTags = item.stack || item.tags || [];
+
+              return (
+                <motion.div
+                  key={item.id || `timeline-${idx}`}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: idx * 0.1 }}
+                  className="relative pl-8 md:pl-10"
+                >
+                  {/* Puce lumineuse */}
+                  <div className="absolute -left-2 top-1.5 h-4 w-4 rounded-full border-2 border-amber-gold bg-primary-dark shadow-[0_0_10px_rgba(255,180,0,0.8)]" />
+
+                  {/* 1. Macaron Année (en haut sur mobile, sur le côté sur desktop) */}
+                  <span className="md:absolute md:-left-32 md:top-1 font-mono text-xs font-bold text-amber-gold bg-amber-gold/10 border border-amber-gold/30 px-2.5 py-1 rounded-md inline-block mb-2 md:mb-0">
+                    {displayYear}
+                  </span>
+
+                  <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/60 p-6 backdrop-blur-md hover:border-amber-gold/40 transition-all">
+                    {/* 2. Grand Titre */}
+                    <h3 className="font-poppins text-lg font-bold text-white mb-1">
+                      {displayTitle}
+                    </h3>
+
+                    {/* 3. Type / Sous-titre (Bleu) */}
+                    {displaySubtitle && (
+                      <h4 className="text-xs font-mono text-ice-blue mb-3">
+                        {displaySubtitle}
+                      </h4>
+                    )}
+
+                    {/* 4. Description */}
+                    {displayDescription && (
+                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                        {displayDescription}
+                      </p>
+                    )}
+
+                    {/* 5. Badges Technologies */}
+                    {displayTags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {displayTags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary-dark text-ice-blue border border-ice-blue/20"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         </section>
 
