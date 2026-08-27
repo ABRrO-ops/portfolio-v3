@@ -93,17 +93,17 @@ export default function ProjectsPage() {
     { key: '3D & Creative', label: t('projects.categories.creative') },
   ];
 
-  const filteredProjects = activeCategory === 'Tous'
-    ? allProjects
-    : allProjects.filter((p) => p.category === activeCategory);
+  const filteredProjects =
+    activeCategory === 'Tous'
+      ? allProjects
+      : allProjects.filter((p) => p.category === activeCategory);
 
   return (
     <main className="min-h-screen w-full bg-primary-dark text-white pt-28 pb-20 px-6">
       <div className="mx-auto max-w-6xl">
-        
         {/* En-tête de la page */}
         <div className="mb-10">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             className="font-poppins text-4xl font-black tracking-tight sm:text-6xl text-white mb-4"
@@ -123,7 +123,8 @@ export default function ProjectsPage() {
               Hub Accréditations & Devoirs
             </h2>
             <p className="mt-2 text-xs text-slate-300 leading-relaxed">
-              Consulte mon CV au format PDF, tous les travaux réalisés durant mon stage chez <strong className="text-cyan-400">FlyRank AI</strong>, ainsi que mes certifications officielles.
+              Consulte mon CV au format PDF, tous les travaux réalisés durant mon stage chez{' '}
+              <strong className="text-cyan-400">FlyRank AI</strong>, ainsi que mes certifications officielles.
             </p>
           </div>
 
@@ -159,7 +160,6 @@ export default function ProjectsPage() {
             <ProjectCard key={project.id || `proj-${idx}`} project={project} />
           ))}
         </div>
-
       </div>
 
       {/* Modals dynamiques */}

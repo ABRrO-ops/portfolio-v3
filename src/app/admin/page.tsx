@@ -6,7 +6,6 @@ import {
   Database,
   PlusCircle,
   Trash2,
-  Upload,
   Loader2,
   CheckCircle2,
   FileCode,
@@ -55,14 +54,13 @@ export default function AdminDashboard() {
   });
   const [projectFile, setProjectFile] = useState<File | null>(null);
 
-  // FORMULAIRE EXPÉRIENCE (Nouveau format 5 champs obligatoires)
   const [expForm, setExpForm] = useState({
-    role: '',         // 1. Titre (ex: Data Engineer)
-    company: '',      // 2. Entreprise (ex: Google) -> Résultat : Data Engineer at Google
-    type: '',         // 3. Type/Sub (ex: Lomé, Togo • Équipe Commit & Pray)
-    start_date: '',   // 4. Année (ex: 2026)
-    description: '',  // 5. Description
-    stack: '',        // 6. Technologies (Badges bleus)
+    role: '',
+    company: '',
+    type: '',
+    start_date: '',
+    description: '',
+    stack: '',
     display_order: 0,
   });
 
@@ -92,15 +90,45 @@ export default function AdminDashboard() {
       setAuthLoading(false);
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      if (activeTab === 'projects') {
+        const { data } = await supabase
+          .from('projects')
+          .select('*')
+          .order('display_order', { ascending: true });
+        setProjectsList(data || []);
+      } else if (activeTab === 'experiences') {
+        const { data } = await supabase
+          .from('experiences')
+          .select('*')
+          .order('created_at', { ascending: false });
+        setExperiencesList(data || []);
+      } else if (activeTab === 'flyrank') {
+        const { data } = await supabase
+          .from('flyrank_assignments')
+          .select('*')
+          .order('display_order', { ascending: true });
+        setFlyrankList(data || []);
+      } else if (activeTab === 'certifs') {
+        const { data } = await supabase
+          .from('certifications')
+          .select('*')
+          .order('display_order', { ascending: true });
+        setCertifsList(data || []);
+      }
+    } catch (err) {
+      console.error('Erreur lors du chargement des données:', err);
+    }
+  };
 
   // CHARGEMENT INITIAL DES DONNÉES
   useEffect(() => {
@@ -130,41 +158,23 @@ export default function AdminDashboard() {
     await supabase.auth.signOut();
   };
 
-  const fetchData = async () => {
-    try {
-      if (activeTab === 'projects') {
-        const { data } = await supabase.from('projects').select('*').order('display_order', { ascending: true });
-        setProjectsList(data || []);
-      } else if (activeTab === 'experiences') {
-        const { data } = await supabase.from('experiences').select('*').order('created_at', { ascending: false });
-        setExperiencesList(data || []);
-      } else if (activeTab === 'flyrank') {
-        const { data } = await supabase.from('flyrank_assignments').select('*').order('display_order', { ascending: true });
-        setFlyrankList(data || []);
-      } else if (activeTab === 'certifs') {
-        const { data } = await supabase.from('certifications').select('*').order('display_order', { ascending: true });
-        setCertifsList(data || []);
-      }
-    } catch (err) {
-      console.error('Erreur lors du chargement des données:', err);
-    }
-  };
-
-  // HELPER UPLOAD NETTOYÉ ET SÉCURISÉ
+  // HELPER UPLOAD STORAGE SUPABASE
   const uploadToStorage = async (file: File, folder: string) => {
     const cleanFileName = file.name.toLowerCase().replace(/[^a-z0-9.]/g, '_');
     const fileName = `${folder}_${Date.now()}_${cleanFileName}`;
-    const { error: uploadError } = await supabase.storage.from('portfolio-assets').upload(fileName, file, {
-      cacheControl: '3600',
-      upsert: true,
-    });
+    const { error: uploadError } = await supabase.storage
+      .from('portfolio-assets')
+      .upload(fileName, file, { cacheControl: '3600', upsert: true });
 
     if (uploadError) {
       console.error('Erreur Upload Supabase Storage:', uploadError);
       throw uploadError;
     }
 
-    const { data: publicUrlData } = supabase.storage.from('portfolio-assets').getPublicUrl(fileName);
+    const { data: publicUrlData } = supabase.storage
+      .from('portfolio-assets')
+      .getPublicUrl(fileName);
+
     return publicUrlData.publicUrl;
   };
 
@@ -178,7 +188,6 @@ export default function AdminDashboard() {
       if (projectFile) {
         imageUrl = await uploadToStorage(projectFile, 'projects');
       }
-
       const { error } = await supabase.from('projects').insert([
         {
           title: projectForm.title,
@@ -186,8 +195,8 @@ export default function AdminDashboard() {
           description: projectForm.description,
           category: projectForm.category,
           status: projectForm.status,
-          stack: projectForm.stack.split(',').map(s => s.trim()).filter(Boolean),
-          highlights: projectForm.highlights.split(',').map(h => h.trim()).filter(Boolean),
+          stack: projectForm.stack.split(',').map((s) => s.trim()).filter(Boolean),
+          highlights: projectForm.highlights.split(',').map((h) => h.trim()).filter(Boolean),
           github_url: projectForm.github_url || null,
           demo_url: projectForm.demo_url || null,
           image_url: imageUrl || null,
@@ -199,8 +208,17 @@ export default function AdminDashboard() {
       if (error) throw error;
       setMessage({ type: 'success', text: 'Projet ajouté avec succès dans Supabase !' });
       setProjectForm({
-        title: '', subtitle: '', description: '', category: 'Web', status: 'Completed',
-        stack: '', highlights: '', github_url: '', demo_url: '', featured: false, display_order: 0,
+        title: '',
+        subtitle: '',
+        description: '',
+        category: 'Web',
+        status: 'Completed',
+        stack: '',
+        highlights: '',
+        github_url: '',
+        demo_url: '',
+        featured: false,
+        display_order: 0,
       });
       setProjectFile(null);
       fetchData();
@@ -211,7 +229,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // 2. AJOUT EXPÉRIENCE (Structure 5 champs obligatoires)
+  // 2. AJOUT EXPÉRIENCE
   const handleAddExperience = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -224,13 +242,11 @@ export default function AdminDashboard() {
           type: expForm.type,
           start_date: expForm.start_date,
           description: expForm.description,
-          stack: expForm.stack.split(',').map(s => s.trim()).filter(Boolean),
+          stack: expForm.stack.split(',').map((s) => s.trim()).filter(Boolean),
           display_order: Number(expForm.display_order),
         },
       ]);
-
       if (error) throw error;
-
       setMessage({ type: 'success', text: 'Expérience / Jalon ajouté avec succès !' });
       setExpForm({
         role: '',
@@ -258,15 +274,21 @@ export default function AdminDashboard() {
       const { error } = await supabase.from('flyrank_assignments').insert([
         {
           ...flyrankForm,
-          stack: flyrankForm.stack.split(',').map(s => s.trim()).filter(Boolean),
+          stack: flyrankForm.stack.split(',').map((s) => s.trim()).filter(Boolean),
           display_order: Number(flyrankForm.display_order),
         },
       ]);
-
       if (error) throw error;
-
       setMessage({ type: 'success', text: 'Devoir/Mission FlyRank ajouté !' });
-      setFlyrankForm({ title: '', module: '', description: '', stack: '', github_url: '', demo_url: '', display_order: 0 });
+      setFlyrankForm({
+        title: '',
+        module: '',
+        description: '',
+        stack: '',
+        github_url: '',
+        demo_url: '',
+        display_order: 0,
+      });
       fetchData();
     } catch (err: any) {
       setMessage({ type: 'error', text: err.message });
@@ -282,7 +304,6 @@ export default function AdminDashboard() {
       setMessage({ type: 'error', text: 'Veuillez joindre le fichier/diplôme (PDF ou PNG).' });
       return;
     }
-
     setLoading(true);
     setMessage(null);
     try {
@@ -297,7 +318,6 @@ export default function AdminDashboard() {
           display_order: Number(certifForm.display_order),
         },
       ]);
-
       if (error) throw error;
       setMessage({ type: 'success', text: 'Certification et document ajoutés avec succès !' });
       setCertifForm({ title: '', issuer: '', issue_date: '', credential_url: '', display_order: 0 });
@@ -323,7 +343,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // ACCÈS EN COURS DE VÉRIFICATION
   if (authLoading) {
     return (
       <main className="min-h-screen w-full bg-primary-dark flex items-center justify-center text-white font-sans">
@@ -332,7 +351,6 @@ export default function AdminDashboard() {
     );
   }
 
-  // ÉCRAN D'AUTHENTIFICATION UNIQUE
   if (!session) {
     return (
       <main className="min-h-screen w-full bg-primary-dark text-white flex items-center justify-center p-6 font-sans">
@@ -376,7 +394,7 @@ export default function AdminDashboard() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
+                  placeholder="............"
                   className="input-admin pl-10"
                 />
               </div>
@@ -391,12 +409,9 @@ export default function AdminDashboard() {
     );
   }
 
-  // INTERFACE ADMIN (UNE FOIS AUTHENTIFIÉ)
   return (
     <main className="min-h-screen w-full bg-primary-dark text-white pt-28 pb-20 px-6 font-sans">
       <div className="mx-auto max-w-5xl">
-
-        {/* HEADER */}
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
           <div>
             <h1 className="font-poppins text-3xl font-black text-amber-gold flex items-center gap-3">
@@ -414,7 +429,6 @@ export default function AdminDashboard() {
           </button>
         </div>
 
-        {/* NOTIFICATION MESSAGE */}
         {message && (
           <div
             className={`mb-6 p-4 rounded-xl flex items-center gap-3 text-sm font-medium ${
@@ -428,7 +442,6 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* ONGLETS */}
         <div className="flex flex-wrap gap-2 mb-8 bg-[#0f171c]/60 p-1.5 rounded-2xl border border-white/10">
           {[
             { id: 'projects', label: 'Projets', icon: FileCode },
@@ -457,8 +470,6 @@ export default function AdminDashboard() {
           })}
         </div>
 
-        {/* CONTENU ONGLETS */}
-
         {/* 1. TAB PROJETS */}
         {activeTab === 'projects' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -466,7 +477,6 @@ export default function AdminDashboard() {
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
                 <PlusCircle className="h-5 w-5 text-amber-gold" /> Nouveau Projet
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Titre *</label>
@@ -490,7 +500,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Description *</label>
                 <textarea
@@ -502,7 +511,6 @@ export default function AdminDashboard() {
                   className="input-admin resize-none"
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Catégorie</label>
@@ -511,13 +519,12 @@ export default function AdminDashboard() {
                     onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value })}
                     className="input-admin"
                   >
-                    <option value="Web">Web / Fullstack</option>
+                    <option value="Fullstack">Web / Fullstack</option>
                     <option value="Systems">Systems / Low-level</option>
-                    <option value="AI">AI / Machine Learning</option>
-                    <option value="Mobile">Mobile / UI-UX</option>
+                    <option value="UI/UX & Mobile">Mobile / UI-UX</option>
+                    <option value="3D & Creative">3D & Creative</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Statut</label>
                   <select
@@ -530,7 +537,6 @@ export default function AdminDashboard() {
                     <option value="Winner">Gagnant Hackathon</option>
                   </select>
                 </div>
-
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Ordre d'affichage</label>
                   <input
@@ -541,7 +547,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Technologies (séparées par virgules)</label>
@@ -564,7 +569,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">URL GitHub</label>
@@ -587,7 +591,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Image Couverture (Upload Storage)</label>
                 <input
@@ -597,7 +600,6 @@ export default function AdminDashboard() {
                   className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-amber-gold file:text-primary-dark file:font-bold file:text-xs"
                 />
               </div>
-
               <div className="flex items-center gap-2 pt-2">
                 <input
                   type="checkbox"
@@ -608,7 +610,6 @@ export default function AdminDashboard() {
                 />
                 <label htmlFor="featured" className="text-xs font-mono text-slate-300">Mettre en vedette (Featured)</label>
               </div>
-
               <button type="submit" disabled={loading} className="btn-submit">
                 {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Enregistrer dans Supabase'}
               </button>
@@ -635,14 +636,13 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* 2. TAB EXPÉRIENCES (NOUVELLE STRUCTURE DE FORMULAIRE OBLIGATOIRE) */}
+        {/* 2. TAB EXPÉRIENCES */}
         {activeTab === 'experiences' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <form onSubmit={handleAddExperience} className="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0f171c]/80 p-6 backdrop-blur-md space-y-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
                 <PlusCircle className="h-5 w-5 text-amber-gold" /> Nouvelle Expérience / Jalon
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Titre / Rôle *</label>
@@ -667,7 +667,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Type / Lieu (Texte en bleu) *</label>
@@ -676,7 +675,7 @@ export default function AdminDashboard() {
                     required
                     value={expForm.type}
                     onChange={(e) => setExpForm({ ...expForm, type: e.target.value })}
-                    placeholder="Ex: Lomé, Togo • Équipe Commit & Pray"
+                    placeholder="Ex: Lomé, Togo - Équipe Commit & Pray"
                     className="input-admin"
                   />
                 </div>
@@ -692,7 +691,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Description *</label>
                 <textarea
@@ -704,7 +702,6 @@ export default function AdminDashboard() {
                   className="input-admin resize-none"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Technologies / Tags (séparés par virgules) *</label>
                 <input
@@ -716,7 +713,6 @@ export default function AdminDashboard() {
                   className="input-admin"
                 />
               </div>
-
               <button type="submit" disabled={loading} className="btn-submit">
                 {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Ajouter au Parcours'}
               </button>
@@ -753,7 +749,6 @@ export default function AdminDashboard() {
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
                 <PlusCircle className="h-5 w-5 text-amber-gold" /> Mission / Devoir FlyRank
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Titre du Devoir/Mission *</label>
@@ -777,7 +772,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Description</label>
                 <textarea
@@ -788,7 +782,6 @@ export default function AdminDashboard() {
                   className="input-admin resize-none"
                 />
               </div>
-
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Stack (séparée par virgules)</label>
                 <input
@@ -799,7 +792,6 @@ export default function AdminDashboard() {
                   className="input-admin"
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">URL Repos GitHub</label>
@@ -822,7 +814,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <button type="submit" disabled={loading} className="btn-submit">
                 {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Ajouter Mission FlyRank'}
               </button>
@@ -856,7 +847,6 @@ export default function AdminDashboard() {
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
                 <PlusCircle className="h-5 w-5 text-amber-gold" /> Nouvelle Certification
               </h2>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Intitulé Certif *</label>
@@ -881,7 +871,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono text-slate-300 mb-1">Année / Date</label>
@@ -904,7 +893,6 @@ export default function AdminDashboard() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Fichier Diplôme/Certificat (PDF/PNG) *</label>
                 <input
@@ -915,7 +903,6 @@ export default function AdminDashboard() {
                   className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-amber-gold file:text-primary-dark file:font-bold file:text-xs"
                 />
               </div>
-
               <button type="submit" disabled={loading} className="btn-submit">
                 {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Uploader & Ajouter Certif'}
               </button>
@@ -946,7 +933,6 @@ export default function AdminDashboard() {
             </div>
           </div>
         )}
-
       </div>
     </main>
   );
