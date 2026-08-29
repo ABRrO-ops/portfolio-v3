@@ -157,7 +157,7 @@ export default function OrbitImages({
     style={{
       width: responsive ? '100%' : width,
       height: responsive ? '100%' : height,
-      aspectRatio: responsive ? '16 / 7' : undefined, // Remplacé 1 / 1 par 16 / 7
+      aspectRatio: responsive ? '16 / 7' : undefined, 
     }}
     aria-hidden="true"
   >

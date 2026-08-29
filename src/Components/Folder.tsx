@@ -137,7 +137,7 @@ export default function Folder({
             >
               <Briefcase className="h-5 w-5 text-cyan-600" />
               <span className="text-[9px] font-bold tracking-tight text-center leading-tight">Stage AI</span>
-              <span className="text-[7px] font-mono text-slate-500">FlyRank</span>
+              <span className="text-[7px] font-mono text-slate-500">FlyRank AI</span>
             </div>
 
             {/* FEUILLE 3 : CERTIFICATIONS */}
@@ -157,7 +157,7 @@ export default function Folder({
             >
               <Award className="h-5 w-5 text-emerald-600" />
               <span className="text-[9px] font-bold tracking-tight">Certifs</span>
-              <span className="text-[7px] font-mono text-slate-500">CCNA / Python</span>
+              <span className="text-[7px] font-mono text-slate-500">Net / AI /Web</span>
             </div>
 
             {/* DOSSIER AVANT (COUVERCLE) */}

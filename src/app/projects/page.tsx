@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import ProjectCard, { Project } from '@/Components/ProjectCard';
 import { useLanguage } from '@/context/LanguageContext';
 import Folder from '@/Components/Folder';
-import FlyRankModal from '@/Components/FlyRankModal';
+import { FlyRankExplorerModal, type FlyRankAssignment } from '@/Components/FlyRankExplorerModal';
 import CertificationsModal from '@/Components/CertificationsModal';
 import { supabase } from '@/lib/supabase';
 
@@ -15,6 +15,7 @@ export default function ProjectsPage() {
   const [isFlyRankOpen, setIsFlyRankOpen] = useState(false);
   const [isCertifsOpen, setIsCertifsOpen] = useState(false);
   const [dbProjects, setDbProjects] = useState<Project[]>([]);
+  const [flyRankAssignments, setFlyRankAssignments] = useState<FlyRankAssignment[]>([]);
 
   // 1. Projets statiques locaux existants
   const LOCAL_PROJECTS: Project[] = [
@@ -65,21 +66,44 @@ export default function ProjectsPage() {
     },
   ];
 
-  // 2. Fetch des projets issus de la BDD Supabase
+  // 2. Fetch des projets et des devoirs FlyRank depuis Supabase
   useEffect(() => {
-    const fetchDbProjects = async () => {
-      const { data, error } = await supabase
+    const fetchDbData = async () => {
+      // Projets standards
+      const { data: projData } = await supabase
         .from('projects')
         .select('*')
-        .neq('category', 'flyrank') // Exclure les devoirs spécifiques à FlyRank
+        .neq('category', 'flyrank')
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        setDbProjects(data as Project[]);
+      if (projData) {
+        setDbProjects(projData as Project[]);
+      }
+
+      // Devoirs FlyRank
+      const { data: flyData } = await supabase
+        .from('flyrank_assignments')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (flyData) {
+        const formattedData: FlyRankAssignment[] = flyData.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          module: item.module || item.cohort || 'AI Fluency',
+          description: item.description,
+          artifactType: item.artifact_type || 'code',
+          imageUrl: item.image_url,
+          documentUrl: item.document_url,
+          githubUrl: item.github_url,
+          demoUrl: item.demo_url,
+          technologies: item.technologies || [],
+        }));
+        setFlyRankAssignments(formattedData);
       }
     };
 
-    fetchDbProjects();
+    fetchDbData();
   }, []);
 
   // 3. Fusion des projets (Locaux + BDD)
@@ -163,7 +187,11 @@ export default function ProjectsPage() {
       </div>
 
       {/* Modals dynamiques */}
-      <FlyRankModal isOpen={isFlyRankOpen} onClose={() => setIsFlyRankOpen(false)} />
+      <FlyRankExplorerModal 
+        isOpen={isFlyRankOpen} 
+        onClose={() => setIsFlyRankOpen(false)} 
+        assignments={flyRankAssignments} 
+      />
       <CertificationsModal isOpen={isCertifsOpen} onClose={() => setIsCertifsOpen(false)} />
     </main>
   );

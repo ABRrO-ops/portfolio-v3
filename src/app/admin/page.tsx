@@ -17,7 +17,133 @@ import {
   LogOut,
   KeyRound,
   Mail,
+  FileImage,
+  FileText,
+  Upload,
 } from 'lucide-react';
+
+
+interface PdfViewerProps {
+  documentUrl: string;
+  documentPreviewUrl?: string; // Image d'aperçu/couverture de secours
+  title?: string;
+}
+
+export const PdfViewer: React.FC<PdfViewerProps> = ({
+  documentUrl,
+  documentPreviewUrl,
+  title = "Document"
+}) => {
+  const [hasError, setHasError] = useState(false);
+
+  // Ajout des paramètres pour cibler la page 1, ajuster la vue et masquer la barre d'outils PDF native
+  const formattedPdfUrl = `${documentUrl}#page=1&view=FitH&toolbar=0`;
+
+  return (
+    <div className="flex flex-col w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+      {/* Zone du Viewer PDF / Fallback */}
+      <div className="relative w-full h-125 bg-slate-950 flex items-center justify-center overflow-hidden">
+        {!hasError ? (
+          <object
+            data={formattedPdfUrl}
+            type="application/pdf"
+            className="w-full h-full"
+            onError={() => setHasError(true)}
+          >
+            {/* Si <object> échoue ou est bloqué par le serveur distant (X-Frame-Options / CORS) */}
+            <FallbackPreview 
+              previewUrl={documentPreviewUrl} 
+              title={title} 
+              onFallbackTrigger={() => setHasError(true)} 
+            />
+          </object>
+        ) : (
+          <FallbackPreview previewUrl={documentPreviewUrl} title={title} />
+        )}
+      </div>
+
+      {/* Zone d'action inférieure */}
+      <div className="flex items-center justify-between px-5 py-3 bg-slate-900 border-t border-slate-800">
+        <div className="flex items-center gap-2 text-slate-400 text-sm">
+          <FileText className="w-4 h-4 text-indigo-400" />
+          <span className="truncate max-w-xs">{title}</span>
+        </div>
+
+        {/* Bouton d'action "Consulter le document" */}
+        <a
+          href={documentUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        >
+          <span>Consulter le document</span>
+          <ExternalLink className="w-4 h-4" />
+        </a>
+      </div>
+    </div>
+  );
+};
+
+// Composant interne pour l'affichage de l'image miniature de secours
+const FallbackPreview: React.FC<{ 
+  previewUrl?: string; 
+  title: string; 
+  onFallbackTrigger?: () => void;
+}> = ({ previewUrl, title, onFallbackTrigger }) => {
+  if (previewUrl) {
+    return (
+      <img
+        src={previewUrl}
+        alt={`Aperçu de ${title}`}
+        className="w-full h-full object-contain"
+        onError={onFallbackTrigger}
+      />
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center justify-center p-6 text-center text-slate-400">
+      <FileText className="w-12 h-12 text-slate-600 mb-2" />
+      <p className="text-sm">L'aperçu interactif n'est pas disponible pour ce document.</p>
+    </div>
+  );
+};
+// Fonction de conversion PDF -> PNG (hors du composant React)
+export async function convertPdfFirstPageToPng(pdfFile: File): Promise<File> {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdfjs-dist/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
+  const arrayBuffer = await pdfFile.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const page = await pdf.getPage(1);
+
+  const viewport = page.getViewport({ scale: 1.5 });
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d');
+
+  canvas.height = viewport.height;
+  canvas.width = viewport.width;
+
+  if (!context) throw new Error("Impossible de créer le contexte canvas");
+
+  await page.render({
+    canvasContext: context,
+    canvas: canvas,
+    viewport: viewport,
+  }).promise;
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) return reject("Erreur lors de la conversion du PDF en PNG");
+      const pngFile = new File(
+        [blob],
+        pdfFile.name.replace(/\.pdf$/i, '.png'),
+        { type: 'image/png' }
+      );
+      resolve(pngFile);
+    }, 'image/png');
+  });
+}
 
 export default function AdminDashboard() {
   // GESTION DE L'AUTHENTIFICATION
@@ -30,6 +156,7 @@ export default function AdminDashboard() {
   // ÉTATS DE L'INTERFACE ADMIN
   const [activeTab, setActiveTab] = useState<'projects' | 'experiences' | 'flyrank' | 'certifs'>('projects');
   const [loading, setLoading] = useState(false);
+  const [loadingCertif, setLoadingCertif] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   // ÉTATS DES DONNÉES RÉCUPÉRÉES DE SUPABASE
@@ -66,21 +193,23 @@ export default function AdminDashboard() {
 
   const [flyrankForm, setFlyrankForm] = useState({
     title: '',
-    module: '',
+    module: 'AI Fluency', // Alignement sur la colonne 'module' de Supabase
+    artifact_type: 'code',
     description: '',
     stack: '',
     github_url: '',
     demo_url: '',
+    image_url: '',
+    doc_url: '',
     display_order: 0,
   });
+  const [flyrankFile, setFlyrankFile] = useState<File | null>(null);
 
-  const [certifForm, setCertifForm] = useState({
-    title: '',
-    issuer: '',
-    issue_date: '',
-    credential_url: '',
-    display_order: 0,
-  });
+  // États distincts pour la gestion des certifications
+  const [certifTitle, setCertifTitle] = useState('');
+  const [certifIssuer, setCertifIssuer] = useState('');
+  const [certifIssueDate, setCertifIssueDate] = useState('');
+  const [certifCredentialUrl, setCertifCredentialUrl] = useState('');
   const [certifFile, setCertifFile] = useState<File | null>(null);
 
   // VÉRIFICATION DE LA SESSION SUPABASE
@@ -90,7 +219,9 @@ export default function AdminDashboard() {
       setAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setAuthLoading(false);
     });
@@ -101,28 +232,16 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
       if (activeTab === 'projects') {
-        const { data } = await supabase
-          .from('projects')
-          .select('*')
-          .order('display_order', { ascending: true });
+        const { data } = await supabase.from('projects').select('*').order('display_order', { ascending: true });
         setProjectsList(data || []);
       } else if (activeTab === 'experiences') {
-        const { data } = await supabase
-          .from('experiences')
-          .select('*')
-          .order('created_at', { ascending: false });
+        const { data } = await supabase.from('experiences').select('*').order('created_at', { ascending: false });
         setExperiencesList(data || []);
       } else if (activeTab === 'flyrank') {
-        const { data } = await supabase
-          .from('flyrank_assignments')
-          .select('*')
-          .order('display_order', { ascending: true });
+        const { data } = await supabase.from('flyrank_assignments').select('*').order('display_order', { ascending: true });
         setFlyrankList(data || []);
       } else if (activeTab === 'certifs') {
-        const { data } = await supabase
-          .from('certifications')
-          .select('*')
-          .order('display_order', { ascending: true });
+        const { data } = await supabase.from('certifications').select('*').order('display_order', { ascending: true });
         setCertifsList(data || []);
       }
     } catch (err) {
@@ -130,7 +249,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // CHARGEMENT INITIAL DES DONNÉES
   useEffect(() => {
     if (session) {
       fetchData();
@@ -142,10 +260,7 @@ export default function AdminDashboard() {
     setLoading(true);
     setAuthError(null);
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
     } catch (err: any) {
       setAuthError(err.message || 'Identifiants invalides.');
@@ -162,6 +277,7 @@ export default function AdminDashboard() {
   const uploadToStorage = async (file: File, folder: string) => {
     const cleanFileName = file.name.toLowerCase().replace(/[^a-z0-9.]/g, '_');
     const fileName = `${folder}_${Date.now()}_${cleanFileName}`;
+
     const { error: uploadError } = await supabase.storage
       .from('portfolio-assets')
       .upload(fileName, file, { cacheControl: '3600', upsert: true });
@@ -171,10 +287,7 @@ export default function AdminDashboard() {
       throw uploadError;
     }
 
-    const { data: publicUrlData } = supabase.storage
-      .from('portfolio-assets')
-      .getPublicUrl(fileName);
-
+    const { data: publicUrlData } = supabase.storage.from('portfolio-assets').getPublicUrl(fileName);
     return publicUrlData.publicUrl;
   };
 
@@ -188,6 +301,7 @@ export default function AdminDashboard() {
       if (projectFile) {
         imageUrl = await uploadToStorage(projectFile, 'projects');
       }
+
       const { error } = await supabase.from('projects').insert([
         {
           title: projectForm.title,
@@ -246,6 +360,7 @@ export default function AdminDashboard() {
           display_order: Number(expForm.display_order),
         },
       ]);
+
       if (error) throw error;
       setMessage({ type: 'success', text: 'Expérience / Jalon ajouté avec succès !' });
       setExpForm({
@@ -265,69 +380,110 @@ export default function AdminDashboard() {
     }
   };
 
-  // 3. AJOUT MISSION FLYRANK
-  const handleAddFlyrank = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-    try {
-      const { error } = await supabase.from('flyrank_assignments').insert([
-        {
-          ...flyrankForm,
-          stack: flyrankForm.stack.split(',').map((s) => s.trim()).filter(Boolean),
-          display_order: Number(flyrankForm.display_order),
-        },
-      ]);
-      if (error) throw error;
-      setMessage({ type: 'success', text: 'Devoir/Mission FlyRank ajouté !' });
-      setFlyrankForm({
-        title: '',
-        module: '',
-        description: '',
-        stack: '',
-        github_url: '',
-        demo_url: '',
-        display_order: 0,
-      });
-      fetchData();
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+  /// 3. AJOUT MISSION FLYRANK (CORRIGÉ TYPESCRIPT + UPLOAD PDF)
+const handleAddFlyrank = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage(null);
+  try {
+    let finalImageUrl = flyrankForm.image_url;
+    let finalDocUrl = flyrankForm.doc_url;
 
-  // 4. AJOUT CERTIFICATION
+    // Upload du fichier si fourni
+    if (flyrankFile) {
+      const uploadedUrl = await uploadToStorage(flyrankFile, 'flyrank');
+      
+      // Associe l'URL selon l'extension ou le type sélectionné
+      if (flyrankFile.name.toLowerCase().endsWith('.pdf') || flyrankForm.artifact_type === 'doc') {
+        finalDocUrl = uploadedUrl;
+      } else {
+        finalImageUrl = uploadedUrl;
+      }
+    }
+
+    const { error } = await supabase.from('flyrank_assignments').insert([
+      {
+        title: flyrankForm.title,
+        module: flyrankForm.module, // Utilisation de 'module'
+        artifact_type: flyrankForm.artifact_type,
+        description: flyrankForm.description,
+        stack: flyrankForm.stack ? flyrankForm.stack.split(',').map((s) => s.trim()).filter(Boolean) : [],
+        github_url: flyrankForm.github_url || null,
+        demo_url: flyrankForm.demo_url || null,
+        image_url: finalImageUrl || null,
+        doc_url: finalDocUrl || null,
+        display_order: Number(flyrankForm.display_order),
+      },
+    ]);
+
+    if (error) throw error;
+    setMessage({ type: 'success', text: 'Devoir/Mission FlyRank ajouté avec succès!' });
+    
+    // Réinitialisation exacte avec 'module' (pour corriger l'erreur de la ligne 425)
+    setFlyrankForm({
+      title: '',
+      module: 'AI Fluency',
+      artifact_type: 'code',
+      description: '',
+      stack: '',
+      github_url: '',
+      demo_url: '',
+      image_url: '',
+      doc_url: '',
+      display_order: 0,
+    });
+    setFlyrankFile(null);
+    fetchData();
+  } catch (err: any) {
+    setMessage({ type: 'error', text: err.message });
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // 4. AJOUT CERTIFICATION (AVEC CONVERSION PDF EN PNG)
   const handleAddCertif = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!certifFile) {
-      setMessage({ type: 'error', text: 'Veuillez joindre le fichier/diplôme (PDF ou PNG).' });
-      return;
-    }
-    setLoading(true);
-    setMessage(null);
+    if (!certifTitle || !certifIssuer || !certifIssueDate || !certifFile) return;
+
+    setLoadingCertif(true);
     try {
-      const fileUrl = await uploadToStorage(certifFile, 'certifications');
-      const { error } = await supabase.from('certifications').insert([
-        {
-          title: certifForm.title,
-          issuer: certifForm.issuer,
-          issue_date: certifForm.issue_date,
-          credential_url: certifForm.credential_url || null,
-          file_url: fileUrl,
-          display_order: Number(certifForm.display_order),
-        },
-      ]);
+      let fileToUpload = certifFile;
+
+      if (certifFile.type === 'application/pdf') {
+        fileToUpload = await convertPdfFirstPageToPng(certifFile);
+      }
+
+      const publicUrl = await uploadToStorage(fileToUpload, 'certifications');
+
+      const { data, error } = await supabase
+        .from('certifications')
+        .insert([
+          {
+            title: certifTitle,
+            issuer: certifIssuer,
+            issue_date: certifIssueDate,
+            credential_url: certifCredentialUrl || null,
+            file_url: publicUrl,
+          },
+        ])
+        .select();
+
       if (error) throw error;
-      setMessage({ type: 'success', text: 'Certification et document ajoutés avec succès !' });
-      setCertifForm({ title: '', issuer: '', issue_date: '', credential_url: '', display_order: 0 });
+
+      if (data) {
+        setCertifsList((prev: any[]) => [data[0], ...prev]);
+      }
+
+      setCertifTitle('');
+      setCertifIssuer('');
+      setCertifIssueDate('');
+      setCertifCredentialUrl('');
       setCertifFile(null);
-      fetchData();
     } catch (err: any) {
-      console.error("Erreur détaillée d'upload:", err);
-      setMessage({ type: 'error', text: err.message || "Erreur lors de l'ajout de la certification." });
+      alert('Erreur lors de l\'ajout de la certification : ' + err.message);
     } finally {
-      setLoading(false);
+      setLoadingCertif(false);
     }
   };
 
@@ -362,13 +518,11 @@ export default function AdminDashboard() {
             <h1 className="text-xl font-bold tracking-tight text-white">Accès Réservé</h1>
             <p className="text-xs font-mono text-slate-400 mt-1">Authentifie-toi pour accéder à la gestion du site.</p>
           </div>
-
           {authError && (
             <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs text-center font-medium">
               {authError}
             </div>
           )}
-
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-mono text-slate-300 mb-1">Email</label>
@@ -384,7 +538,6 @@ export default function AdminDashboard() {
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-xs font-mono text-slate-300 mb-1">Mot de passe</label>
               <div className="relative">
@@ -399,7 +552,6 @@ export default function AdminDashboard() {
                 />
               </div>
             </div>
-
             <button type="submit" disabled={loading} className="btn-submit w-full mt-2">
               {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Se connecter'}
             </button>
@@ -608,7 +760,9 @@ export default function AdminDashboard() {
                   onChange={(e) => setProjectForm({ ...projectForm, featured: e.target.checked })}
                   className="h-4 w-4 rounded accent-amber-gold"
                 />
-                <label htmlFor="featured" className="text-xs font-mono text-slate-300">Mettre en vedette (Featured)</label>
+                <label htmlFor="featured" className="text-xs font-mono text-slate-300">
+                  Mettre en vedette (Featured)
+                </label>
               </div>
               <button type="submit" disabled={loading} className="btn-submit">
                 {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Enregistrer dans Supabase'}
@@ -742,36 +896,55 @@ export default function AdminDashboard() {
           </div>
         )}
 
-        {/* 3. TAB STAGE FLYRANK */}
+        {/* 3. TAB STAGE FLYRANK (NOUVEAU FORMULAIRE AVEC SUPABASE STORAGE + DUAL LINK) */}
         {activeTab === 'flyrank' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <form onSubmit={handleAddFlyrank} className="lg:col-span-2 rounded-2xl border border-white/10 bg-[#0f171c]/80 p-6 backdrop-blur-md space-y-4">
               <h2 className="text-lg font-bold text-white flex items-center gap-2 mb-4 border-b border-white/10 pb-2">
                 <PlusCircle className="h-5 w-5 text-amber-gold" /> Mission / Devoir FlyRank
               </h2>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Titre du Devoir/Mission *</label>
+                  <label className="block text-xs font-mono text-slate-300 mb-1">Titre du Devoir / Mission *</label>
                   <input
                     type="text"
                     required
                     value={flyrankForm.title}
                     onChange={(e) => setFlyrankForm({ ...flyrankForm, title: e.target.value })}
-                    placeholder="Intégration Agent LLM RAG"
+                    placeholder="Identity Kit / Ship the Ugly"
                     className="input-admin"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">Module / Cohorte</label>
-                  <input
-                    type="text"
-                    value={flyrankForm.module}
-                    onChange={(e) => setFlyrankForm({ ...flyrankForm, module: e.target.value })}
-                    placeholder="AI Cohort July 2026"
-                    className="input-admin"
-                  />
+                  <label className="block text-xs font-mono text-slate-300 mb-1">Parcours / Cohorte *</label>
+                
+                <select
+                  value={flyrankForm.module}
+                  onChange={(e) => setFlyrankForm({ ...flyrankForm, module: e.target.value })}
+                  className="input-admin font-medium"
+                >
+                  <option value="AI Fluency">AI Fluency</option>
+                  <option value="Front-end AI Engineering">Front-end AI Engineering</option>
+                </select>
                 </div>
               </div>
+
+              <div>
+                <label className="block text-xs font-mono text-slate-300 mb-1 font-bold">
+                  Format du Rendu / Artefact *
+                </label>
+                <select
+                  value={flyrankForm.artifact_type}
+                  onChange={(e) => setFlyrankForm({ ...flyrankForm, artifact_type: e.target.value })}
+                  className="input-admin border-amber-gold/40 text-amber-gold font-bold"
+                >
+                  <option value="code">💻 Application Web (Repo GitHub + Live Demo)</option>
+                  <option value="image">🖼️ Visual Design / Image PNG (Canva / Export)</option>
+                  <option value="doc">📄 Document / PDF</option>
+                </select>
+              </div>
+
               <div>
                 <label className="block text-xs font-mono text-slate-300 mb-1">Description</label>
                 <textarea
@@ -782,38 +955,105 @@ export default function AdminDashboard() {
                   className="input-admin resize-none"
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-mono text-slate-300 mb-1">Stack (séparée par virgules)</label>
+                <label className="block text-xs font-mono text-slate-300 mb-1">Technologies / Stack (séparées par virgules)</label>
                 <input
                   type="text"
                   value={flyrankForm.stack}
                   onChange={(e) => setFlyrankForm({ ...flyrankForm, stack: e.target.value })}
-                  placeholder="LangChain, OpenAI, Pinecone"
+                  placeholder="Canva, HTML, TailwindCSS, Next.js"
                   className="input-admin"
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">URL Repos GitHub</label>
-                  <input
-                    type="url"
-                    value={flyrankForm.github_url}
-                    onChange={(e) => setFlyrankForm({ ...flyrankForm, github_url: e.target.value })}
-                    placeholder="https://..."
-                    className="input-admin"
-                  />
+
+              {/* CHAMPS DYNAMIQUES */}
+              {flyrankForm.artifact_type === 'image' && (
+                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-3">
+                  <p className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-2">
+                    <FileImage className="w-4 h-4" /> Artefact Visuel (PNG / Canva)
+                  </p>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 mb-1">Fichier PNG/JPG (Upload direct)</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => setFlyrankFile(e.target.files?.[0] || null)}
+                      className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-emerald-500 file:text-slate-950 file:font-bold file:text-xs"
+                    />
+                  </div>
+                  <div className="text-center text-xs text-slate-500 font-mono">OU</div>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 mb-1">URL externe de l'image</label>
+                    <input
+                      type="url"
+                      value={flyrankForm.image_url}
+                      onChange={(e) => setFlyrankForm({ ...flyrankForm, image_url: e.target.value })}
+                      placeholder="https://..."
+                      className="input-admin"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-mono text-slate-300 mb-1">URL Démo</label>
-                  <input
-                    type="url"
-                    value={flyrankForm.demo_url}
-                    onChange={(e) => setFlyrankForm({ ...flyrankForm, demo_url: e.target.value })}
-                    placeholder="https://..."
-                    className="input-admin"
-                  />
+              )}
+
+              {flyrankForm.artifact_type === 'doc' && (
+                <div className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/5 space-y-3">
+                  <p className="text-xs font-mono text-blue-400 font-bold flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Artefact Documentaire (PDF)
+                  </p>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 mb-1">Fichier PDF (Upload direct)</label>
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) => setFlyrankFile(e.target.files?.[0] || null)}
+                      className="input-admin text-slate-400 file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-blue-500 file:text-white file:font-bold file:text-xs"
+                    />
+                  </div>
+                  <div className="text-center text-xs text-slate-500 font-mono">OU</div>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 mb-1">URL externe du PDF/Doc</label>
+                    <input
+                      type="url"
+                      value={flyrankForm.doc_url}
+                      onChange={(e) => setFlyrankForm({ ...flyrankForm, doc_url: e.target.value })}
+                      placeholder="https://..."
+                      className="input-admin"
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
+
+              {flyrankForm.artifact_type === 'code' && (
+                <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
+                  <p className="text-xs font-mono text-amber-gold font-bold flex items-center gap-2">
+                    <FileCode className="w-4 h-4" /> Artefact Code & Web App
+                  </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono text-slate-300 mb-1">URL Repos GitHub</label>
+                      <input
+                        type="url"
+                        value={flyrankForm.github_url}
+                        onChange={(e) => setFlyrankForm({ ...flyrankForm, github_url: e.target.value })}
+                        placeholder="https://github.com/..."
+                        className="input-admin"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-mono text-slate-300 mb-1">URL Démo Site Live (Netlify/Vercel)</label>
+                      <input
+                        type="url"
+                        value={flyrankForm.demo_url}
+                        onChange={(e) => setFlyrankForm({ ...flyrankForm, demo_url: e.target.value })}
+                        placeholder="https://...netlify.app"
+                        className="input-admin"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <button type="submit" disabled={loading} className="btn-submit">
                 {loading ? <Loader2 className="animate-spin h-5 w-5 mx-auto" /> : 'Ajouter Mission FlyRank'}
               </button>
@@ -828,7 +1068,7 @@ export default function AdminDashboard() {
                   <div key={item.id} className="p-3 rounded-xl bg-primary-dark/80 border border-white/5 flex items-start justify-between">
                     <div>
                       <p className="text-sm font-bold text-white">{item.title}</p>
-                      <span className="text-[10px] text-cyan-400 font-mono">{item.module}</span>
+                      <span className="text-[10px] text-cyan-400 font-mono">{item.track || item.module}</span>
                     </div>
                     <button onClick={() => handleDelete('flyrank_assignments', item.id)} className="text-slate-500 hover:text-rose-400 p-1">
                       <Trash2 className="h-4 w-4" />
@@ -853,8 +1093,8 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    value={certifForm.title}
-                    onChange={(e) => setCertifForm({ ...certifForm, title: e.target.value })}
+                    value={certifTitle}
+                    onChange={(e) => setCertifTitle(e.target.value)}
                     placeholder="Cisco CCNA - Switching & Routing"
                     className="input-admin"
                   />
@@ -864,8 +1104,8 @@ export default function AdminDashboard() {
                   <input
                     type="text"
                     required
-                    value={certifForm.issuer}
-                    onChange={(e) => setCertifForm({ ...certifForm, issuer: e.target.value })}
+                    value={certifIssuer}
+                   onChange={(e) => setCertifIssuer(e.target.value)}
                     placeholder="Cisco Systems"
                     className="input-admin"
                   />
@@ -876,8 +1116,8 @@ export default function AdminDashboard() {
                   <label className="block text-xs font-mono text-slate-300 mb-1">Année / Date</label>
                   <input
                     type="text"
-                    value={certifForm.issue_date}
-                    onChange={(e) => setCertifForm({ ...certifForm, issue_date: e.target.value })}
+                    value={certifIssueDate}
+                    onChange={(e) => setCertifIssueDate(e.target.value)}
                     placeholder="2026"
                     className="input-admin"
                   />
@@ -886,8 +1126,8 @@ export default function AdminDashboard() {
                   <label className="block text-xs font-mono text-slate-300 mb-1">Lien de vérification (externe)</label>
                   <input
                     type="url"
-                    value={certifForm.credential_url}
-                    onChange={(e) => setCertifForm({ ...certifForm, credential_url: e.target.value })}
+                    value={certifCredentialUrl}
+                   onChange={(e) => setCertifCredentialUrl(e.target.value)}
                     placeholder="https://credly.com/..."
                     className="input-admin"
                   />
@@ -917,9 +1157,16 @@ export default function AdminDashboard() {
                   <div key={c.id} className="p-3 rounded-xl bg-primary-dark/80 border border-white/5 flex items-start justify-between">
                     <div>
                       <p className="text-sm font-bold text-white">{c.title}</p>
-                      <p className="text-xs text-emerald-400">{c.issuer} ({c.issue_date})</p>
+                      <p className="text-xs text-emerald-400">
+                        {c.issuer} ({c.issue_date})
+                      </p>
                       {c.file_url && (
-                        <a href={c.file_url} target="_blank" rel="noreferrer" className="text-[10px] text-amber-gold hover:underline flex items-center gap-1 mt-1">
+                        <a
+                          href={c.file_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[10px] text-amber-gold hover:underline flex items-center gap-1 mt-1"
+                        >
                           Voir fichier <ExternalLink className="h-2.5 w-2.5" />
                         </a>
                       )}

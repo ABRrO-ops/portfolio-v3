@@ -6,6 +6,7 @@ import { X, ExternalLink, Briefcase } from 'lucide-react';
 import { SiGithub } from 'react-icons/si';
 import { supabase } from '@/lib/supabase';
 
+
 interface FlyRankProject {
   id: string;
   title: string;
