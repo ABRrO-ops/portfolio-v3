@@ -69,6 +69,23 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 
 ---
 
+## 💡 Usage Examples
+
+- **Example 1 — Dynamic Track & Milestones Filtering:** 
+  Visitors can navigate through the interactive timeline on the About page to explore academic achievements, hackathon projects, and technical cohorts. The application dynamically fetches and renders experiences from Supabase alongside static entries.
+
+- **Example 2 — Interactive 3D Portfolio & Timeline Navigation:** 
+  Visitors can interact with the 3D canvas viewport to explore software projects, filter experience milestones by category (e.g., Hackathons, Education, AI Cohorts), and trigger direct modal previews of project source code and live deployments.
+
+  ---
+
+## 📊 V2 Eval Results & Metrics
+- **Performance:** 48/100 (Bottlenecks identified: 3D canvas hydration & font loading)
+- **Accessibility:** 89/100
+- **Best Practices:** 100/100
+- **SEO:** 80/100
+
+---
 
 ## 🤖 Honest "How AI Tools Built This" Disclosure
 
@@ -83,11 +100,4 @@ AI tools (specifically Claude 3.5 Sonnet and Gemini) were utilized throughout th
 
 ## 📝 License & Author
 
-Created by BAWA Abdoul-Madjid (ABRO) — Front-end AI Engineering Cohort.
-
-
-
-
-
-
-
+Created by Abdoul-Madjid BAWA (ABRO) — Front-end AI Engineering.
