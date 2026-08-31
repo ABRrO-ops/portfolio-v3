@@ -21,29 +21,38 @@ interface TimelineItem {
 }
 
 const LOCAL_TIMELINE: TimelineItem[] = [
-  {
+   {
     year: '2026',
-    key: 'tcc',
-    type: 'achievement',
-    tags: ['Hackathon', 'Civic Tech', 'UI/UX', 'Figma'],
-  },
-  {
-    year: '2026',
-    key: 'flyrank',
+    title: 'FlyRank AI Internership Cohort V1',
+    subtitle: 'Front-end AI Engineering',
+    description: "Immersion intensive sur l'intégration des LLM, FastMCP (Model Context Protocol) et la création d'interfaces dynamiques guidées par l'IA.",
     type: 'internship',
-    tags: ['AI SDK', 'FastMCP', 'Next.js', 'LLM'],
+    tags: ['AI SDK', 'FastMCP', 'Next.js', 'LLM', 'Three.js', 'React Three Fiber', 'GLSL Shaders'],
   },
   {
     year: '2026',
-    key: 'omni',
+    title: 'Finaliste Hackathon TCC Hack & Defend',
+    subtitle: 'Lomé, Togo • Équipe Commit & Pray',
+    description: 'Sélection et parcours finaliste autour du projet CotiPay, une solution Fintech de gestion de tontines et paiements communautaires.',
+    type: 'achievement',
+    tags: ['Hackathon', 'Fintech', 'UI/UX', 'Figma', 'React 19', 'Tailwind CSS', 'REST APIs'],
+  },
+ 
+  {
+    year: '2026',
+    title: 'Système Algorithmique Omni-Trader Bot',
+    subtitle: 'Trading Systémique & Quantitatif',
+    description: "Conception et développement d'un bot automatisé intégrant la structure Smart Money (BOS, CHoCH, Order Blocks) et le Price action pour XAUUSD et EURUSD.",
     type: 'project',
-    tags: ['Python', 'Smart Money Concepts', 'REST API', 'TradingView'],
+    tags: ['Python', 'Smart Money Concepts', 'REST API', 'TradingView', 'PostgreSQL', 'Railway', 'Docker'],
   },
   {
     year: '2025 - 2026',
-    key: 'degree',
+    title: 'Licence 1 Informatique & Ingénierie Web',
+    subtitle: 'IPNet Institute of Technology',
+    description: 'Formation spécialisée en génie logiciel, algorithmique avancée, structures de données avec Python/JS et réseaux (CCNA).',
     type: 'education',
-    tags: ['Computer Science', 'Python', 'Web/Mobile', 'Networks'],
+    tags: ['Computer Science', 'Web/Mobile', 'Networks', 'Cybersecurity', 'UI/UX Design', 'System Design'],
   },
 ];
 
@@ -66,7 +75,6 @@ export default function AboutPage() {
     fetchExperiences();
   }, []);
 
-  // Les nouvelles expériences dynamiques s'affichent en haut de la Timeline
   const allTimelineItems = [...dbExperiences, ...LOCAL_TIMELINE];
 
   return (
@@ -86,9 +94,8 @@ export default function AboutPage() {
             <h1 className="font-poppins text-4xl font-black tracking-tight sm:text-6xl text-white mb-6">
               {lang === 'FR' ? (
                 <>Bâtir des outils <span className="text-amber-gold">scalables</span> & des expériences <span className="text-ice-blue">interactives</span>.</>
-              ) : (
-                <>Building <span className="text-amber-gold">scalable</span> tools & <span className="text-ice-blue">interactive</span> experiences.</>
-              )}
+              ) : 
+                <>Building <span className="text-amber-gold">scalable</span> tools & <span className="text-ice-blue">interactive</span> experiences.</>}
             </h1>
           </motion.div>
 
@@ -163,31 +170,26 @@ export default function AboutPage() {
 
           <div className="relative border-l border-ice-blue/20 ml-4 md:ml-32 space-y-12">
             {allTimelineItems.map((item, idx) => {
-              // Détermination de l'année (Macaron 1)
               const displayYear = item.start_date || item.year;
 
-              // Détermination du Titre (2) (ex: Data Engineer at Google)
               const displayTitle = item.role
                 ? `${item.role}${item.company ? ` at ${item.company}` : ''}`
                 : item.key
                 ? t(`about.timeline.${item.key}.title`)
                 : item.title;
 
-              // Détermination du Sous-titre / Type (3)
-              const displaySubtitle = item.type
-                ? item.type
+              const displaySubtitle = item.subtitle
+                ? item.subtitle
                 : item.key
                 ? t(`about.timeline.${item.key}.subtitle`)
-                : item.subtitle;
+                : item.type;
 
-              // Détermination de la Description (4)
               const displayDescription = item.description
                 ? item.description
                 : item.key
                 ? t(`about.timeline.${item.key}.description`)
                 : null;
 
-              // Détermination des Badges (5)
               const displayTags = item.stack || item.tags || [];
 
               return (
@@ -199,43 +201,39 @@ export default function AboutPage() {
                   transition={{ duration: 0.5, delay: idx * 0.1 }}
                   className="relative pl-8 md:pl-10"
                 >
-                  {/* Puce lumineuse */}
                   <div className="absolute -left-2 top-1.5 h-4 w-4 rounded-full border-2 border-amber-gold bg-primary-dark shadow-[0_0_10px_rgba(255,180,0,0.8)]" />
 
-                  {/* 1. Macaron Année (en haut sur mobile, sur le côté sur desktop) */}
                   <span className="md:absolute md:-left-32 md:top-1 font-mono text-xs font-bold text-amber-gold bg-amber-gold/10 border border-amber-gold/30 px-2.5 py-1 rounded-md inline-block mb-2 md:mb-0">
                     {displayYear}
                   </span>
 
-                  <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/60 p-6 backdrop-blur-md hover:border-amber-gold/40 transition-all">
-                    {/* 2. Grand Titre */}
-                    <h3 className="font-poppins text-lg font-bold text-white mb-1">
-                      {displayTitle}
-                    </h3>
+                  <div className="rounded-2xl border border-ice-blue/15 bg-[#0f171c]/60 p-6 backdrop-blur-md hover:border-amber-gold/40 transition-all space-y-4">
+                    <div>
+                      <h3 className="font-poppins text-lg font-bold text-white mb-0.5">
+                        {displayTitle}
+                      </h3>
+                      {displaySubtitle && (
+                        <h4 className="text-xs font-mono text-ice-blue">
+                          {displaySubtitle}
+                        </h4>
+                      )}
+                    </div>
 
-                    {/* 3. Type / Sous-titre (Bleu) */}
-                    {displaySubtitle && (
-                      <h4 className="text-xs font-mono text-ice-blue mb-3">
-                        {displaySubtitle}
-                      </h4>
-                    )}
-
-                    {/* 4. Description */}
                     {displayDescription && (
-                      <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                      <p className="text-xs text-slate-300 leading-relaxed">
                         {displayDescription}
                       </p>
                     )}
 
-                    {/* 5. Badges Technologies */}
+                    {/* Uniquement les tags en bleu avec le préfixe # */}
                     {displayTags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="flex flex-wrap gap-1.5 pt-1">
                         {displayTags.map((tag) => (
                           <span
                             key={tag}
                             className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-primary-dark text-ice-blue border border-ice-blue/20"
                           >
-                            {tag}
+                            #{tag}
                           </span>
                         ))}
                       </div>
